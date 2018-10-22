@@ -1,0 +1,27 @@
+{% extends "bootstrap/base.html" %}
+
+{% block html_attribs %} lang='zh-CN' {% endblock %}
+{% block title %}{{ page_title|safe }}{%endblock %}
+{% block head %}
+	<meta charset="UTF-8" />
+	<meta name="author" content="Ggzzhh" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	{{ super() }}
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" type="text/css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}" type="text/css">
+	<link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="shortcut icon" href="/static/image/favicon.ico" type="image/x-icon"/>
+    {% block _head %}
+
+    {% endblock %}
+{% endblock %}
+{% block content %}
+
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    {{ moment.include_moment() }}
+    {% block _scripts %}
+    
+    {% endblock %}
+{% endblock %}
