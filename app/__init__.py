@@ -24,7 +24,7 @@ csrf = CsrfProtect()
 # 用户会话安全等级
 login_manager.session_protection = "strong"
 # 要在用户登录时重定向到的视图的名称
-login_manager.login_view = '.login'
+login_manager.login_view = 'main.login'
 # 进行登录检查没有通过时显示的信息
 login_manager.login_message = '该页面需要登录后才能访问'
 # login_message的类型

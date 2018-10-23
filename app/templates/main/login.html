@@ -1,143 +1,40 @@
 {% extends "base.html" %}
 {% block _head %}
-  <style>
-    body {
-      overflow: hidden;
-    }
-
-    input {
-      background: none;
-      border: 0;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-      -ms-border-bottom: 1px solid #edebe9;
-      border-radius: 0;
-      box-sizing: border-box;
-      display: block;
-      padding: 4px 0;
-      transition-property: border;
-      transition-duration: 0.2s;
-    }
-
-    input:focus {
-      border-color: #ce1b28;
-      outline: none;
-    }
-
-    input:hover {
-      border-color: #ce1b28;
-      outline: none;
-    }
-
-    .container {
-      width: 100%;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-    }
-
-    .login-container {
-      width: 100%;
-      height: 100%;
-    }
-
-    .login-frm {
-      text-align: center;
-      width: 100%;
-      margin-bottom: 12rem;
-    }
-
-    .submit {
-      width: 50%;
-      display: flex;
-      flex-direction: row-reverse;
-      margin-top: 40px;
-    }
-
-    .submit button {
-      min-width: 100px;
-    }
-
-    .fields {
-      margin-top: 30px;
-      width: 80%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .field {
-      margin-top: 10px;
-      display: block;
-      width: 50%;
-      position: relative;
-      line-height: 160%;
-      font-size: 18px;
-    }
-
-    .field label{
-      position: absolute;
-      left: 0;
-      top: 3px;
-    }
-
-    .control {
-      width: 100%;
-    }
-
-    .message {
-      font-size: 1rem;
-      text-align: left;
-      min-height: 30px;
-      font-weight: 700;
-    }
-
-    .title {
-      width: 100%;
-      background-color: #ce1b28;
-      color: white;
-      height: 100%;
-      padding: 25px 0 30px;
-      font-weight: 600;
-      font-size: 4.3rem;
-    }
-
-    .logo {
-      position: fixed;
-      font-size: 30px;
-      left: 8%;
-      top: 3%;
-      font-weight: 600;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" type="text/css">
 {% endblock %}
 {% block content %}
   <div class="container">
-    <div class="logo animated jackInTheBox">
-      {{ page_title }}
+    <div class="logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
+{#      {{ page_title }}#}
     </div>
     <div class="login-container flex justify-content-center align-items-center">
-      <div class="login-frm">
+      <div class="login">
         <div class="flex-column align-items-center">
           <div class="title">
             <label class="animated jackInTheBox">用户登录</label>
           </div>
-          <div class="fields">
-            <div class="field">
-              <input class="control" type="text" id="phone-num">
-              <label class="animated">手机号</label>
-              <div class="message"></div>
+          <form action="{{ url_for('main.login') }}" method="post" class="login-frm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <div class="fields">
+              <div class="field">
+                <input class="control" type="text" id="phoneNum" name="phone_num" required>
+                <label class="animated">手机号</label>
+                <div class="message"></div>
+              </div>
+              <div class="field">
+                <input class="control password" type="password" required >
+                <label class="animated">密码</label>
+                <div class="message"></div>
+              </div>
             </div>
-            <div class="field">
-              <input class="control password" type="password">
-              <label class="animated">密码</label>
-              <div class="message"></div>
-            </div>
-          </div>
 
-          <div class="submit">
-            <button id="login-btn" class="btn btn-default btn-lg">登录</button>
-          </div>
+            <div class="submit">
+              <button type="submit" id="submit" class="btn btn-default btn-lg" disabled>
+                登录
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -145,21 +42,34 @@
 {% endblock %}
 {% block _scripts %}
   <script>
+      let RIGHT_NUM = false;
       $(document).ready(function () {
-          $('#phone-num').bind('input propertychange', function () {
-              var val = $(this).val();
-              var message = $(this).next().next();
-              if (val.length < 11 || val.length > 11){
+          $('#phoneNum').bind('input propertychange', function () {
+              let val = $(this).val();
+              // console.log(val);
+              let message = $(this).next().next();
+
+              if (val.length < 11 || val.length > 11 || !val.startsWith('1')){
+                  if (!$('#submit').attr('disabled'))
+                    $('#submit').removeAttr('disabled').attr('disabled', 'disabled');
                   message.removeClass('green');
                   message.addClass('red');
                   message.text('');
                   message.text('X 请输入正确的手机号!')
               }
               else {
+                  $('#submit').removeAttr('disabled');
                   message.removeClass('red');
                   message.addClass('green');
                   message.text('');
                   message.text('√')
+              }
+
+              if (val.length === 0) {
+                  if (!$('#submit').attr('disabled'))
+                    $('#submit').removeAttr('disabled').attr('disabled', 'disabled');
+                  message.removeClass('green red');
+                  message.text('');
               }
           });
 
@@ -168,7 +78,7 @@
           });
 
           $('.control').blur(function () {
-              var text = $(this).val();
+              let text = $(this).val();
               if(!text){
                   $(this).next().removeClass('fadeOutRight');
                   $(this).next().addClass('fadeInRight');
