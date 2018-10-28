@@ -1,0 +1,111 @@
+.macro {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.page-section {
+    color: white;
+    height: 155px;
+    padding-bottom: 48px;
+    padding-top: 50px;
+}
+
+.page-section h1 {
+    font-size: 2rem;
+    margin-top: 10px
+}
+
+.section-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.section-item a {
+    font-weight: 500;
+    text-decoration: none;
+    color: white;
+}
+
+.section-item label {
+    margin: 0 5px;
+}
+
+.page-seperate {
+    background: url(../images/page-shadow.png) no-repeat center bottom;
+    padding-bottom: 70px;
+    margin: 0px;
+}
+
+
+/*page-card样式开始*/
+.card-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid rgb(226, 226, 226);
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+.item-head {
+    display: block;
+    position: relative;
+}
+.item-image {
+    width: 240px;
+    height: 182px;
+    border-radius: 8px;
+}
+.item-classify {
+    font-size: 0.6rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px 12px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: white;
+    border-bottom-left-radius:14px;
+    border-top-right-radius: 8px;
+    font-weight: 500;
+}
+.item-status {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px 12px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: white;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.other-container{
+
+    padding-top: 10px;
+    width: 100%;
+    color: #21202e;
+}
+
+.item-title {
+    height: 60px;
+}
+
+.item-title a{
+    font-weight: 500;
+    color: #21202e;
+    text-decoration: none;
+}
+.item-title a:hover {
+    color: #ce1b28;
+}
+
+.item-explain {
+    color: gray;
+}
+/*page-card样式结束*/

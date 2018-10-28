@@ -3,7 +3,6 @@
 {% set active_page='/' %}
 {% block _head %}
   <style>
-
     .logo {
       width: 100%;
       padding: 20px 0;
@@ -70,8 +69,8 @@
         <div class="nav-li"><a href="#">HOME</a></div>
         <div class="nav-li active"><a href="#">党建课堂</a></div>
         <div class="nav-li">
-          {% if current_user.is_authenticated %}
-            <a href="#">我的</a>
+          {% if not current_user.is_authenticated %}
+            <a href="#">我的培训</a>
             {% else %}
             <a href="{{ url_for('main.login', next=active_page) }}">登录</a>
           {% endif %}
@@ -81,4 +80,7 @@
     </div>
   </div>
   {{ model.page_section('党建课堂', '#', '#') }}
+  {% block page_content %}
+  
+  {% endblock %}
 {% endblock %}

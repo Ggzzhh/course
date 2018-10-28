@@ -10,7 +10,7 @@ class Config:
     SQL_USERNAME = 'root'
 
     # 数据库密码
-    SQL_PASSWORD = 'Gg657000'
+    SQL_PASSWORD = '657000'
 
     # 密匙
     SECRET_KEY = os.environ.get('SECRET_KEY') or "W2s4S4sa2FS96Ok"

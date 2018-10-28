@@ -13,7 +13,9 @@ from . import main
 @main.route('/')
 # @login_required
 def index():
-    return render_template('main/index.html', page_title=current_app.config['SYSTEMNAME'])
+    classifies = ['党建', '十八大', '等等等', '四矿']
+    return render_template('main/index.html',
+                           page_title=current_app.config['SYSTEMNAME'], classifies=classifies)
 
 
 @main.route('/login', methods=['POST', 'GET'])

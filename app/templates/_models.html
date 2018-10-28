@@ -19,3 +19,29 @@
   </div>
   <div class="page-seperate"></div>
 {% endmacro %}
+
+
+{% macro course_card(title, course_url,
+                      classify, newstime,
+                      total_time, img_url='../static/images/bg.jpg') %}
+    <div class="card-container">
+      <div class="img-container">
+        <a href="{{ course_url }}">
+          <div class="item-head">
+            <img src="{{ img_url }}" alt="背景图" class="item-image img-responsive">
+            <div class="item-classify">{{ classify }}</div>
+            <div class="item-status">发布时间：{{ newstime }}</div>
+          </div>
+        </a>
+      </div>
+      <div class="other-container">
+        <div class="item-title">
+          <a href="{{ course_url }}">{{ title }}</a>
+        </div>
+        <div class="item-explain">
+          总学习时长：{{ total_time }}分钟
+        </div>
+      </div>
+    </div>
+
+{% endmacro %}
