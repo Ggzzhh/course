@@ -26,3 +26,15 @@ def login():
         return redirect(url_for('main.index'))
     return render_template('main/login.html', page_title=current_app.config['SYSTEMNAME'])
 
+
+@main.route('/course/<int:id>/detail')
+def course_detail(id):
+    course = {
+        'title': '学习十八大重要讲话',
+        'newstime': '2018-11-12',
+        'classify': '学习、考试',
+        'total_time': '200',
+        'img_url': '../../static/images/bg.jpg'
+    }
+    return render_template('main/detail.html', page_title=current_app.config['SYSTEMNAME'],
+                           course=course)

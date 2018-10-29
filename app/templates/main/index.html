@@ -1,5 +1,6 @@
 {% extends 'main/base.html' %}
-{% import '_models.html' as model %}
+{% import 'main/_models.html' as models %}
+{% set course_status = 'notpass' %}
 {% block _head %}
   {{ super() }}
   <style>
@@ -145,7 +146,16 @@
           <div class="learning">
             <div class="learn-item1">
               <div class="text">
-                当前正在学习: <a href="#">学习十八大培训</a>
+                当前正在学习:
+                <a href="#">
+                  学习十八大培训(
+                  {% if course_status == 'pass' %}
+                    <span class="green">已通过</span>
+                    {% else %}
+                    <span class="red">未通过</span>
+                  {% endif %}
+                  )
+                </a>
               </div>
             </div>
             <div class="learn-item2">
@@ -198,7 +208,7 @@
       <div class="trains row">
         {% for foo in range(8) %}
           <div class="col-md-3 col-sm-3 animated bounce">
-            {{ model.course_card('学习十八大培训', 'javascript:void(0)', '学习、考试', '2018-11-11', 200) }}
+            {{ models.course_card('学习十八大培训', url_for('main.course_detail', id=1), '学习、考试', '2018-11-11', 200) }}
           </div>
         {% endfor %}
       </div>
