@@ -51,18 +51,18 @@
           <div class="detail-btn">
             {% if not current_user.is_authenticated %}
               {% if '没有选择这门课' == '' %}
-                <button class="btn btn-lg btn-primary">立即选课</button>
+                <button class="btn btn-lg btn-primary" id="choiceCourseBtn">立即选课</button>
               {% else %}
                 {% if '含有学习' != '' %}
                   {% if '学习进度大于0%' != '' %}
-                    <button class="btn btn-lg btn-success">继续学习(50%)</button>
+                    <button class="btn btn-lg btn-success" id="learnBtn">继续学习(50%)</button>
                   {% else %}
-                    <button class="btn btn-lg btn-success">开始学习</button>
+                    <button class="btn btn-lg btn-success" id="learnBtn">开始学习</button>
                   {% endif %}
                 {% endif %}
                 {% if '含有考试' != '' %}
-                  {% if '含有学习且学习进度100%' == '' %}
-                    <button type="button" class="btn btn-lg btn-warning ml-3">进行考试</button>
+                  {% if '含有学习且学习进度100%' != '' %}
+                    <button type="button" class="btn btn-lg btn-warning ml-3" id="examBtn">进行考试</button>
                   {% else %}
                     <button type="button" class="btn btn-lg btn-warning ml-3"
                             data-toggle="popover" title="无法考试"
@@ -85,6 +85,19 @@
   <script>
       $(function () {
           $("[data-toggle='popover']").popover();
+
+          $("#choiceCourseBtn").click(function () {
+              console.log('选择这门课程！')
+          });
+
+          $("#learnBtn").click(function () {
+              console.log('开始学习')
+          });
+
+          $("#examBtn").click(function () {
+              console.log('开始考试');
+              window.location = "{{ url_for('main.exam_detail', course_id=1) }}"
+          });
       });
   </script>
 {% endblock %}

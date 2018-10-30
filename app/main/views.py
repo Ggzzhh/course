@@ -38,3 +38,34 @@ def course_detail(id):
     }
     return render_template('main/detail.html', page_title=current_app.config['SYSTEMNAME'],
                            course=course)
+
+
+@main.route('/exam/<int:course_id>/detail')
+def exam_detail(course_id):
+    detail = {
+        'course_id': course_id,
+        'course': '学习十八大重要讲话',
+        'exam_time': 45,
+        'total_score': 100,
+        'question_type': {
+            'judge': {
+                'nums': 10,
+                'score': 3,
+            },
+            'single_selection': {
+                'nums': 10,
+                'score': 3
+            },
+            'multi_selection': {
+                'nums': 10,
+                'score': 4
+            }
+        }
+    }
+    return render_template('main/exam_detail.html', page_title=current_app.config['SYSTEMNAME'],
+                           detail=detail)
+
+
+@main.route('/exam/<int:exam_id>/progress')
+def exam(exam_id):
+    return '考卷'
