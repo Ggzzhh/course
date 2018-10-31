@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% block _head %}
+  <style>
+    .video-container {
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-head {
+      min-height: 50px;
+      max-height: 60px;
+      color: gray;
+      height: 6vh;
+      width: 100%;
+      background-color: #21202e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .video-head-left {
+      width: 100%;
+      display: flex;
+    }
+
+    .video-head-left a {
+      margin-left: 20px;
+      color: #f5f5f5;
+      font-weight: 600;
+    }
+
+    .course-title {
+      margin-left: 50px;
+      color: #f5f5f5;
+    }
+
+    .video-head-right {
+      width: 100%;
+    }
+
+    .course-progress {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .progress-content {
+      padding-left: 20px;
+      height: 20px;
+      width: 50%;
+    }
+
+    .progress-title {
+      font-weight: 600;
+      color: #ce1b28;
+    }
+
+    .video-content {
+      display: flex;
+      width: 100%;
+      height: 94%;
+    }
+
+    .video-wrapper {
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-menu {
+      position: relative;
+      width: 300px;
+      height: 100%;
+      background-color: #21202e;
+      transition-duration: 0.5s;
+      transition-delay: 0s;
+      transition-property: all;
+    }
+
+    .video-btn {
+      cursor: pointer;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 24px;
+      padding-top: 15px;
+      background-color: rgba(159, 159, 159, 0.7);
+      width: 40px;
+      height: 80px;
+      border-radius: 20px;
+      color: white;
+    }
+
+
+    .video-menu-btn {
+      position: absolute;
+      left: -40px;
+      top: 10%;
+      z-index: 9999;
+    }
+
+    .menu {
+      color: #ce1b28;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition-duration: 0.5s;
+      transition-delay: 0s;
+      transition-property: all;
+    }
+
+    .menu-head {
+      width: 100%;
+      height: 50px;
+      background-color: rgba(255, 255, 255, 0.05);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing:20px
+    }
+
+    .menu-ul {
+      margin-top: 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .menu-li {
+      padding-left: 5px;
+      padding-right: 5px;
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      /* 让文字无法被选中 */
+      -moz-user-select: none;/*支持Firefox浏览器*/
+      -webkit-user-select: none;/*支持Chrome，Opera，Safari等浏览器*/
+      -ms-user-select: none;/*支持IE浏览器*/
+      user-select: none;
+    }
+
+    .menu-li-title:hover {
+      cursor: pointer;
+      background-color: #ffffff;
+      border-radius: 10px;
+    }
+
+    .menu-li:active {
+      color: #7c1018;
+    }
+
+    .menu-li-title {
+      padding: 5px;
+      overflow: hidden;
+      width: 50%;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .menu-li-progress {
+      height: 20px;
+      width: 40%;
+    }
+
+    #video-iframe {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <div class="video-container">
+    <div class="video-head">
+      <div class="video-head-left">
+        <a href="javascript:history.back(-1)">返回</a>
+        <div class="course-title">
+          当前视频: <<span>标题</span> - <span id="videoTitle">{{ videos[0].title }}</span>>
+        </div>
+      </div>
+      <div class="video-head-right">
+        <div class="course-progress">
+          <span class="progress-title">
+            课程进度:
+          </span>
+          <div class="progress-content">
+            <div class="progress">
+              <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
+                80%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="video-content">
+      <div class="video-wrapper" id="wrapper">
+
+      </div>
+      <div class="video-menu">
+        <div class="video-menu-btn">
+          <div class="video-btn" id="toggle-menu">
+            <span id="menuBtn" class="animated">课程</span>
+          </div>
+        </div>
+        <div class="menu">
+          <div class="menu-head">
+            目录
+          </div>
+          <div class="menu-ul">
+            {% for video in videos %}
+              <div class="menu-li" d-src="{{ video.src }}" d-title="{{ video.title }}">
+                <div class="menu-li-title">
+                  {{ loop.index }} {{ video.title }}
+                </div>
+
+                <div class="menu-li-progress">
+                  <div class="progress">
+                    <div class="progress-bar progress-bar-danger"
+                         role="progressbar"
+                         aria-valuenow="{{ video.percent }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100"
+                         style="width: {{ video.percent }}%; min-width: 2em;">
+                      {{ video.percent }}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block _scripts %}
+  <script src="http://lib.baomitu.com/chimee-player/1.1.9/chimee-player.browser.js"></script>
+  <script>
+
+      /*
+        const t1 = setInterval(function () {
+            let x = chimee.currentTime;
+            console.log(x)
+        }, 5000);
+       */
+
+      $(document).ready(function () {
+          let chimee = new ChimeePlayer({
+              wrapper: '#wrapper',  // video dom容器
+              src: '{{ videos[0].src }}',
+              controls: true
+          });
+          chimee.title = '{{ videos[0].title }}';
+
+          function loadVideo(src, title){
+              chimee.controls = false;
+              chimee = new ChimeePlayer({
+                  wrapper: '#wrapper',
+                  src: src,
+                  controls: true
+              });
+              chimee.title = title
+          }
+
+          $('#toggle-menu').click(function () {
+              if ($('.video-menu').css('width') === '0px'){
+                  $('.video-menu').css('width', '300px');
+                  $('#menuBtn').removeClass().addClass('flipInX animated');
+                  setTimeout(function () {
+                      $('.menu').css('display', 'block');
+                  }, 400)
+
+              }
+              else {
+                  $('.video-menu').css('width', '0px');
+                  $('#menuBtn').removeClass().addClass('flipInY animated');
+                  $('.menu').css('display', 'none');
+              }
+
+          });
+
+
+          $('.menu-li').click(function () {
+             loadVideo($(this).attr('d-src'));
+             $('#videoTitle').text($(this).attr('d-title'))
+          });
+      });
+
+  </script>
+{% endblock %}

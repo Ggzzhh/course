@@ -69,3 +69,29 @@ def exam_detail(course_id):
 @main.route('/exam/<int:exam_id>/progress')
 def exam(exam_id):
     return '考卷'
+
+
+@main.route('/course/<int:course_id>/video')
+def course_video(course_id):
+    videos = [
+        {
+            'title': '小猪佩奇11111111111111',
+            'src': '../../static/videos/pig1.mp4',
+            'percent': '58',
+            'duration': '5:03'
+        },
+        {
+            'title': '小猪佩奇2222222222222222',
+            'src': '../../static/videos/pig2.mp4',
+            'percent': '81',
+            'duration': '5:03'
+        },
+        {
+            'title': '小猪佩奇3',
+            'src': '../../static/videos/pig3.mp4',
+            'percent': '3',
+            'duration': '5:03'
+        }
+    ]
+    return render_template('main/play_video.html', videos=videos)
+
