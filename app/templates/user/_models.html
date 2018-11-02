@@ -1,0 +1,31 @@
+{% macro left_menu(active_name) %}
+  {% set navs = [
+    {'name': '学习', 'span': 'glyphicon-book', 'url': url_for('main.learn_center')},
+    {'name': '考试', 'span': 'glyphicon-education', 'url': url_for('main.examination')},
+    {'name': '练习', 'span': 'glyphicon-pencil', 'url': url_for('main.exercise')},
+    {'name': '档案', 'span': 'glyphicon-object-align-bottom', 'url': url_for('main.learn_center')},
+    {'name': '资料', 'span': 'glyphicon-user', 'url': url_for('main.learn_center')},
+  ] %}
+  <div class="macro left-navs">
+    {% for nav in navs %}
+      <a href="{{ nav['url'] }}" class="left-nav {% if nav['name'] == active_name %}show{% endif %} "
+      >
+        <span class="glyphicon {{ nav['span'] }}"></span>
+        {{ nav['name'] }}
+      </a>
+
+    {% endfor %}
+
+
+  </div>
+{% endmacro %}
+
+
+{% macro nothing() %}
+  <div class="nothing">
+    <img src="{{ url_for('static', filename='images/nothing.png') }}" alt="nothing!">
+    <div class="n-text">
+      这里什么也没有...
+    </div>
+  </div>
+{% endmacro %}

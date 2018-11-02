@@ -1,0 +1,163 @@
+{% extends 'user/base.html' %}
+{% import 'user/_models.html' as user_model %}
+
+{% block _head %}
+  {{ super() }}
+{% endblock %}
+
+{% block page_left %}
+  {{ user_model.left_menu('练习') }}
+{% endblock %}
+
+{% block page_right %}
+  <div class="learn" id="learn">
+    <div class="learn-head">
+      <span class="glyphicon glyphicon-pencil"></span>
+      在线练习
+    </div>
+    <div class="learn-navs">
+      <a class="learn-nav choice" href="#ex"
+         aria-controls="noPass" role="tab" data-toggle="tab">
+        练习
+      </a>
+      <a class="learn-nav" href="#ex-record"
+         aria-controls="pass" role="tab" data-toggle="tab">练习记录</a>
+    </div>
+    <div class="learn-content">
+      <div class="tab-content">
+        <div id="ex" role="tabpanel" class="tab-pane active">
+
+
+          {% if not learn_cards %}
+            <div class="flex-column justify-content-center align-items-center">
+              <div class="exam-table table-responsive">
+                <table class="mytable table-bordered">
+                  <thead>
+                  <tr>
+                    <th style="width: 400px">课程</th>
+                    <th>开始时间</th>
+                    <th>答卷时间(分钟)</th>
+                    <th>操作</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>
+                      <div class="exam-course">
+                        <div class="exam-course-img">
+                          <img src="{{ exam.img_url }}" alt="">
+                        </div>
+                        <div class="exam-course-info">
+                          <div class="course-title">
+                            <a href="{{ exam.url }}">{{ exam.title }}</a>
+                          </div>
+                          <div class="course-percent">
+                            {{ model.progress('学习进度：', '20') }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ exam.newstime }}</td>
+                    <td>{{ exam.exam_time }}</td>
+                    <td>
+                      {% if '学习完毕' %}
+                        <a href="{{ exam.exam_url }}" class="btn btn-primary">进入考试</a>
+                      {% else %}
+                        <a href="{{ exam.url }}" class="btn btn-primary">继续学习</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="exam-course">
+                        <div class="exam-course-img">
+                          <img src="{{ exam.img_url }}" alt="">
+                        </div>
+                        <div class="exam-course-info">
+                          <div class="course-title">
+                            <a href="{{ exam.url }}">{{ exam.title }}</a>
+                          </div>
+                          <div class="course-percent">
+                            {{ model.progress('学习进度：', '20') }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style="vertical-align: center">{{ exam.newstime }}</td>
+                    <td>{{ exam.exam_time }}</td>
+                    <td>
+                      {% if '学习完毕' %}
+                        <a href="{{ exam.exam_url }}" class="btn btn-primary">进入考试</a>
+                      {% else %}
+                        <a href="{{ exam.url }}" class="btn btn-primary">继续学习</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              {{ model.pagination() }}
+            </div>
+
+          {% else %}
+            {{ user_model.nothing() }}
+          {% endif %}
+        </div>
+        <div id="ex-record" role="tabpanel" class="tab-pane">
+          {% if not learn_cards %}
+            <div class="flex-column justify-content-center align-items-center">
+              <div class="exam-table table-responsive">
+                <table class="mytable table-bordered">
+                  <thead>
+                  <tr>
+                    <th style="width: 400px">课程</th>
+                    <th>开始时间</th>
+                    <th>分数</th>
+                    <th>操作</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>
+                      <div class="exam-course">
+                        <div class="exam-course-img">
+                          <img src="{{ exam.img_url }}" alt="">
+                        </div>
+                        <div class="exam-course-info">
+                          <div class="course-title">
+                            <a href="{{ exam.url }}">{{ exam.title }}</a>
+                          </div>
+                          <div class="course-percent">
+                            {{ model.progress('学习进度：', '20') }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>2018-11-11 10:24</td>
+                    <td>77分</td>
+                    <td>
+                      <a href="#" class="btn btn-default">查看档案</a>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              {{ model.pagination() }}
+            </div>
+          {% else %}
+            {{ user_model.nothing() }}
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+{% endblock %}
+{% block _scripts %}
+  {{ super() }}
+  <script>
+      $(document).ready(function () {
+      })
+  </script>
+{% endblock %}

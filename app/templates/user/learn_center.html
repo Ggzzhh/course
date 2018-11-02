@@ -1,0 +1,103 @@
+{% extends 'user/base.html' %}
+{% import 'user/_models.html' as user_model %}
+
+{% block _head %}
+  {{ super() }}
+{% endblock %}
+
+{% block page_left %}
+  {{ user_model.left_menu('学习') }}
+{% endblock %}
+
+{% block page_right %}
+  <div class="learn">
+    <div class="learn-head">
+      <span class="glyphicon glyphicon-book"></span>
+      在线学习
+    </div>
+    <div class="learn-navs">
+      <a class="learn-nav choice">全部</a>
+      <a class="learn-nav">学习中</a>
+      <a class="learn-nav">已通过</a>
+    </div>
+    <div class="learn-content">
+      {% if not learn_cards %}
+        <div class="row">
+          <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="learn-card">
+              <div class="thumbnail">
+                <img src="{{ course.img_url }}" alt="">
+                <div class="bg">
+                  <div class="status">继续学习</div>
+                </div>
+
+              </div>
+              <div class="learn-card-content">
+                <a href="{{ course.url }}">
+                  {{ course.title }}
+                </a>
+                <div class="other">
+                  考试：已通过
+                  <br>
+                  学习进度： 123
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="learn-card">
+              <div class="thumbnail">
+                <img src="{{ course.img_url }}" alt="">
+                <div class="bg">
+                  <div class="status">继续学习</div>
+                </div>
+
+              </div>
+              <div class="learn-card-content">
+                <a href="{{ course.url }}">
+                  {{ course.title }}
+                </a>
+                <div class="other">
+                  考试：已通过
+                  <br>
+                  学习进度： 123
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="learn-card">
+              <div class="thumbnail">
+                <img src="{{ course.img_url }}" alt="">
+                <div class="bg">
+                  <div class="status">继续学习</div>
+                </div>
+
+              </div>
+              <div class="learn-card-content">
+                <a href="{{ course.url }}">
+                  {{ course.title }}
+                </a>
+                <div class="other">
+                  考试：已通过
+                  <br>
+                  学习进度： 123
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      {% else %}
+        {{ user_model.nothing() }}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+{% block _scripts %}
+  {{ super() }}
+  <script>
+      $(document).ready(function () {
+      })
+  </script>
+{% endblock %}

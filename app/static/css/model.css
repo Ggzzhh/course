@@ -117,3 +117,51 @@
     color: gray;
 }
 /*page-card样式结束*/
+
+
+/* left_menu 样式 */
+.left-navs {
+    font-weight: 600;
+    font-size: 1.3rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border: 1px solid #21202e;
+    border-radius: 3px;
+}
+.left-nav {
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0);
+    line-height: 60px;
+    height: 60px;
+    color: #21202e;
+
+}
+.left-nav span {
+    padding-left: 30px;
+    margin-right: 15px;
+}
+.left-navs .show, .left-nav:hover {
+    background-color: #ce1b28;
+    color: white;
+
+}
+.left-navs a , .left-navs a:hover{
+    text-decoration: none;
+}
+/* left_menu 样式结束 */
+
+/* nothing 样式 */
+.nothing {
+    padding: 30px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.n-text {
+    margin-top: 20px;
+}
+/* nothing 样式结束 */

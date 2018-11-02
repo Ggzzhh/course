@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% import '_models.html' as model %}
+{% set active_page='/' %}
+{% block _head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/head_base.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_center.css') }}" type="text/css">
+  <style>
+
+  </style>
+{% endblock %}
+{% block content %}
+  <div class="header flex justify-content-center">
+    <div class="container flex justify-content-between">
+      <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
+      </div>
+      <div class="nav-ul">
+        <div class="nav-li"><a href="#">HOME</a></div>
+        <div class="nav-li"><a href="/">党建课堂</a></div>
+        <div class="nav-li myactive">
+          {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('main.learn_center', user_id=1) }}">学习中心</a>
+          {% else %}
+            <a href="{{ url_for('main.login', next=active_page) }}">登录</a>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ model.page_section('学习中心', url_for('main.learn_center', user_id=1), url_for('main.index')) }}
+  {% block page_content %}
+    <div class="container">
+      <div class="learn-center">
+        <div class="learn-center-left">
+          {% block page_left %}
+
+          {% endblock %}
+        </div>
+        <div class="learn-center-right">
+          <div class="right-content">
+            {% block page_right %}
+
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endblock %}
+{% endblock %}
+{% block _scripts %}
+  {{ super() }}
+  <script>
+      $(document).ready(function () {
+          $('.learn-nav').click(function () {
+              let c = $(this).parent().find('.choice');
+              c.removeClass('choice');
+              $(this).addClass('choice');
+          });
+      })
+  </script>
+{% endblock %}

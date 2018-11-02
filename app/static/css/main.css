@@ -62,3 +62,37 @@ body {
     background-color: #ce1b28;
 }
 
+.progress-bar {
+    min-width: 2rem;
+}
+
+.my-progress  {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.learn-progress {
+    width: 100%;
+    max-width: 400px;
+}
+
+.progress {
+    margin: 0px;
+}
+
+.progress-bar-danger {
+    background-color: #ce1b28;
+}
+
+.my-progress .text {
+    width: 8rem;
+    text-align: end;
+    font-weight: 600;
+    color: #ce1b28;
+    letter-spacing: 0;
+    /* overflow: hidden; */
+    white-space: nowrap;
+}
+

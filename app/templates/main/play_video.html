@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% import '_models.html' as model %}
 {% block _head %}
   <style>
     .video-container {
@@ -140,8 +141,6 @@
       padding-right: 5px;
       margin-top: 10px;
       width: 100%;
-      display: flex;
-      justify-content: space-between;
       align-items: center;
       /* 让文字无法被选中 */
       -moz-user-select: none;/*支持Firefox浏览器*/
@@ -163,14 +162,15 @@
     .menu-li-title {
       padding: 5px;
       overflow: hidden;
-      width: 50%;
+      width: 100%;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
     .menu-li-progress {
-      height: 20px;
-      width: 40%;
+      padding-left: 18px;
+      padding-right: 6px;
+      width: 100%;
     }
 
     #video-iframe {
@@ -189,18 +189,7 @@
         </div>
       </div>
       <div class="video-head-right">
-        <div class="course-progress">
-          <span class="progress-title">
-            课程进度:
-          </span>
-          <div class="progress-content">
-            <div class="progress">
-              <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
-                80%
-              </div>
-            </div>
-          </div>
-        </div>
+        {{ model.progress('课程进度：', '80') }}
       </div>
     </div>
     <div class="video-content">
@@ -223,18 +212,8 @@
                 <div class="menu-li-title">
                   {{ loop.index }} {{ video.title }}
                 </div>
-
                 <div class="menu-li-progress">
-                  <div class="progress">
-                    <div class="progress-bar progress-bar-danger"
-                         role="progressbar"
-                         aria-valuenow="{{ video.percent }}"
-                         aria-valuemin="0"
-                         aria-valuemax="100"
-                         style="width: {{ video.percent }}%; min-width: 2em;">
-                      {{ video.percent }}%
-                    </div>
-                  </div>
+                  {{ model.progress('学习进度：', video.percent) }}
                 </div>
               </div>
             {% endfor %}
@@ -293,8 +272,8 @@
 
 
           $('.menu-li').click(function () {
-             loadVideo($(this).attr('d-src'));
-             $('#videoTitle').text($(this).attr('d-title'))
+              loadVideo($(this).attr('d-src'));
+              $('#videoTitle').text($(this).attr('d-title'))
           });
       });
 

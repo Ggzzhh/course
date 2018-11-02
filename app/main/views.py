@@ -81,7 +81,7 @@ def course_video(course_id):
             'duration': '5:03'
         },
         {
-            'title': '小猪佩奇2222222222222222',
+            'title': '小猪佩奇2222222222222221231231231232222222222223333333',
             'src': '../../static/videos/pig2.mp4',
             'percent': '81',
             'duration': '5:03'
@@ -95,3 +95,41 @@ def course_video(course_id):
     ]
     return render_template('main/play_video.html', videos=videos)
 
+
+@main.route('/user/learn_center')
+def learn_center():
+    course = {
+        'title': '学习十八大重要讲话',
+        'newstime': '2018-11-12',
+        'classify': '学习、考试',
+        'total_time': '200',
+        'img_url': '../../static/images/bg.jpg',
+        'url': url_for('main.course_detail', id=1)
+    }
+    return render_template('user/learn_center.html', course=course)
+
+
+@main.route('/user/examination')
+def examination():
+    exam = {
+        'title': '学习十八大重要讲话',
+        'exam_time': 90,
+        'newstime': '2018-11-12',
+        'img_url': '../../static/images/bg.jpg',
+        'url': url_for('main.course_detail', id=1),
+        'exam_url': url_for('main.exam_detail', course_id=1)
+    }
+    return render_template('user/examination.html', exam=exam)
+
+
+@main.route('/user/exercise')
+def exercise():
+    exam = {
+        'title': '学习十八大重要讲话',
+        'exam_time': 90,
+        'newstime': '2018-11-12',
+        'img_url': '../../static/images/bg.jpg',
+        'url': url_for('main.course_detail', id=1),
+        'exam_url': url_for('main.exam_detail', course_id=1)
+    }
+    return render_template('user/exercise.html', exam=exam)

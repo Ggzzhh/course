@@ -5,7 +5,7 @@
   {{ super() }}
   <style>
     a {
-      font-weight: 500;
+      font-weight: 600;
       color: #21202e;
       text-decoration: none;
       transition-duration: 0.3s;
@@ -106,26 +106,8 @@
       line-height: 1rem;
     }
 
-    .learn-item1, .learn-item2 {
+    .learn-item1{
       width: 100%;
-    }
-
-    .learn-item2 {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .learn-progress {
-      min-width: 400px;
-    }
-
-    .progress {
-      margin: 0px;
-    }
-
-    .progress-bar-danger {
-      background-color: #ce1b28;
     }
 
     .pagination {
@@ -140,7 +122,7 @@
       {% if not current_user.is_authenticated %}
         <div class="show-user">
           <div class="user-info">
-            <a href="javascript:void(0)">张小四</a>
+            <a href="/user/learn_center">张小四</a>
             <a href="#">退出</a>
           </div>
           <div class="learning">
@@ -151,30 +133,20 @@
                   学习十八大培训(
                   {% if course_status == 'pass' %}
                     <span class="green">已通过</span>
-                    {% else %}
+                  {% else %}
                     <span class="red">未通过</span>
                   {% endif %}
                   )
                 </a>
               </div>
             </div>
-            <div class="learn-item2">
-              <div class="text">学习进度：</div>
-              <div class="learn-progress">
-                <div class="progress">
-                  <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
-                    80%
-                  </div>
-                </div>
-              </div>
-
-            </div>
+              {{ model.progress('学习进度：', '0') }}
           </div>
         </div>
       {% endif %}
       <div class="classify gary">
         <dl class="filter-type">
-          <dt class="filter-type-name">培训分类</dt>
+          <dt class="filter-type-name">学习分类</dt>
           <dd class="filter-item-wrap">
             <div class="filter-item-list">
               <div class="filter-item current">不限</div>
@@ -185,12 +157,14 @@
           </dd>
         </dl>
         <dl class="filter-type">
-          <dt class="filter-type-name">培训类型</dt>
+          <dt class="filter-type-name">学习类型</dt>
           <dd class="filter-item-wrap">
             <div class="filter-item-list">
               <div class="filter-item current">不限</div>
-              <div class="filter-item">考试</div>
+              <div class="filter-item">公共</div>
               <div class="filter-item">学习</div>
+              <div class="filter-item">考试</div>
+              <div class="filter-item">培训</div>
             </div>
           </dd>
         </dl>
@@ -208,32 +182,12 @@
       <div class="trains row">
         {% for foo in range(8) %}
           <div class="col-md-3 col-sm-3 animated bounce">
-            {{ models.course_card('学习十八大培训', url_for('main.course_detail', id=1), '学习、考试', '2018-11-11', 200) }}
+            {{ models.course_card('学习十八大培训', url_for('main.course_detail', id=1), '培训', '2018-11-11', 200) }}
           </div>
         {% endfor %}
       </div>
 
-      <div class="pagination">
-        <nav aria-label="Page navigation">
-          <ul class="pagination">
-            <li>
-              <a href="#" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            <li><a href="#">1</a></li>
-            <li><a href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><a href="#">4</a></li>
-            <li><a href="#">5</a></li>
-            <li>
-              <a href="#" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
+    {{ model.pagination() }}
     </div>
   </div>
 {% endblock %}
