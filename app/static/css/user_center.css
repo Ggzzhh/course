@@ -14,6 +14,7 @@
 }
 
 .right-content {
+    /*min-height: 710px;*/
     width: 100%;
     height: 100%;
     border: 1px solid #21202e;
@@ -68,6 +69,7 @@
 }
 
 .learn-content {
+
     border-top: 1px solid #21202e;
     padding: 20px;
     margin-top: 20px;
@@ -171,7 +173,24 @@
     width: 100%;
 }
 
-.mytable>tbody>tr>td, .mytable>thead>tr>th {
+.mytable {
+    width: 100%;
+}
+
+.mytable>thead>tr>th {
+    color: #21202e;
+    font-weight: 700;
+    padding: 8px;
+    vertical-align: center;
+    text-align: center;
+}
+
+.tab-content  {
+    width: 100%;
+}
+
+.mytable>tbody>tr>td {
+    font-weight: 400;
     padding: 8px;
     vertical-align: center;
     text-align: center;

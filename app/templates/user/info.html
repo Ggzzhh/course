@@ -1,0 +1,135 @@
+{% extends 'user/base.html' %}
+{% import 'user/_models.html' as user_model %}
+
+{% block _head %}
+  {{ super() }}
+  <style>
+    #userFrm {
+      width: 100%;
+    }
+    .learn-content {
+      border: none;
+    }
+    .user-info {
+      width: 75%;
+      color: #21202e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .user-edit-btn {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .user-li {
+      width: 100%;
+      font-size: 1.2rem;
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .user-li-title {
+
+      padding-right: 20px;
+      width: 100%;
+      text-align: right;
+    }
+
+    .user-li-msg {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100%;
+    }
+
+    .user-li-msg button {
+      margin-right: 20px;
+    }
+
+    .user-li-msg label {
+      font-weight: 400;
+      font-size: 1rem;
+      margin-right: 10px;
+    }
+
+    .form-control {
+      border: none;
+      box-shadow: none;
+
+    }
+
+
+  </style>
+{% endblock %}
+
+{% block page_left %}
+  {{ user_model.left_menu('资料') }}
+{% endblock %}
+
+{% block page_right %}
+  <div class="learn" id="learn">
+    <div class="learn-head">
+      <span class="glyphicon glyphicon-user"></span>
+      个人资料
+    </div>
+
+    <div class="learn-content">
+      <form method="post" id="userFrm">
+        <div class="tab-content">
+          <div class="user-info">
+            <div class="user-li">
+              <div class="user-li-title">姓名</div>
+              <div class="user-li-msg">
+                <input type="text" name="name" value="张小三" class="form-control">
+              </div>
+            </div>
+            <div class="user-li">
+              <div class="user-li-title">性别</div>
+              <div class="user-li-msg">
+                <label for="male">
+                  <input  type="radio" value="male" id="male" name="sex" checked> 男
+                </label>
+                <label for="female">
+                  <input type="radio" value="female" id="female" name="sex"> 女
+                </label>
+
+              </div>
+            </div>
+            <div class="user-li">
+              <div class="user-li-title">手机</div>
+              <div class="user-li-msg">
+                <input type="text" name="phone" value="1231231231212" class="form-control">
+              </div>
+            </div>
+            <div class="user-li">
+              <div class="user-li-title">邮箱</div>
+              <div class="user-li-msg">
+                <input type="text" name="mail" value="123@123.com" class="form-control">
+              </div>
+            </div>
+            <div class="user-li">
+              <div class="user-li-title"></div>
+              <div class="user-li-msg">
+                <button type="button" class="btn btn-primary">保存</button>
+                <button type="button" class="btn btn-warning">修改密码</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+  </div>
+{% endblock %}
+{% block _scripts %}
+  {{ super() }}
+  <script>
+      $(document).ready(function () {
+      })
+  </script>
+{% endblock %}

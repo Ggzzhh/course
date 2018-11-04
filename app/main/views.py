@@ -133,3 +133,12 @@ def exercise():
         'exam_url': url_for('main.exam_detail', course_id=1)
     }
     return render_template('user/exercise.html', exam=exam)
+
+
+@main.route('/user/archives')
+def archives():
+    return render_template('user/archives.html')
+
+@main.route('/user/info')
+def info():
+    return render_template('user/info.html')

@@ -1,0 +1,66 @@
+{% extends 'user/base.html' %}
+{% import 'user/_models.html' as user_model %}
+
+{% block _head %}
+  {{ super() }}
+  <style>
+    .learn-content {
+      border: none;
+    }
+
+  </style>
+{% endblock %}
+
+{% block page_left %}
+  {{ user_model.left_menu('档案') }}
+{% endblock %}
+
+{% block page_right %}
+  <div class="learn" id="learn">
+    <div class="learn-head">
+      <span class="glyphicon glyphicon-object-align-bottom"></span>
+      档 案
+    </div>
+
+    <div class="learn-content">
+      <div class="tab-content">
+        {% if not '没档案' %}
+          {{ user_model.nothing() }}
+        {% else %}
+          <div class="flex-column justify-content-center align-items-center">
+          <table class="mytable table-bordered">
+            <thead>
+            <tr>
+              <th>课程名称</th>
+              <th>开始学习日期</th>
+              <th>课程时长</th>
+              <th>学习时长</th>
+              <th>考试状态</th>
+            </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>测试课程</td>
+                <td>2018-11-12</td>
+                <td>200 分钟</td>
+                <td>210 分钟</td>
+                <td><span class="green">已通过</span></td>
+              </tr>
+            </tbody>
+          </table>
+          {{ model.pagination() }}
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+{% endblock %}
+{% block _scripts %}
+  {{ super() }}
+  <script>
+      $(document).ready(function () {
+      })
+  </script>
+{% endblock %}

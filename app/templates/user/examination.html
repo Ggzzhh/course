@@ -91,6 +91,32 @@
                     {% endif %}
                   </td>
                 </tr>
+                <tr>
+                  <td>
+                    <div class="exam-course">
+                      <div class="exam-course-img">
+                        <img src="{{ exam.img_url }}" alt="">
+                      </div>
+                      <div class="exam-course-info">
+                        <div class="course-title">
+                          <a href="{{ exam.url }}">{{ exam.title }}</a>
+                        </div>
+                        <div class="course-percent">
+                          {{ model.progress('学习进度：', '20') }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="vertical-align: center">{{ exam.newstime }}</td>
+                  <td>{{ exam.exam_time }}</td>
+                  <td>
+                    {% if '学习完毕' %}
+                      <a href="{{ exam.exam_url }}" class="btn btn-primary">进入考试</a>
+                    {% else %}
+                      <a href="{{ exam.url }}" class="btn btn-primary">继续学习</a>
+                    {% endif %}
+                  </td>
+                </tr>
                 </tbody>
               </table>
             </div>
