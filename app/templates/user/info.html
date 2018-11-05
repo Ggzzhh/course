@@ -84,38 +84,19 @@
             <div class="user-li">
               <div class="user-li-title">姓名</div>
               <div class="user-li-msg">
-                <input type="text" name="name" value="张小三" class="form-control">
-              </div>
-            </div>
-            <div class="user-li">
-              <div class="user-li-title">性别</div>
-              <div class="user-li-msg">
-                <label for="male">
-                  <input  type="radio" value="male" id="male" name="sex" checked> 男
-                </label>
-                <label for="female">
-                  <input type="radio" value="female" id="female" name="sex"> 女
-                </label>
-
+                <input type="text" name="name" value="{{ current_user.name }}" class="form-control" disabled>
               </div>
             </div>
             <div class="user-li">
               <div class="user-li-title">手机</div>
               <div class="user-li-msg">
-                <input type="text" name="phone" value="1231231231212" class="form-control">
-              </div>
-            </div>
-            <div class="user-li">
-              <div class="user-li-title">邮箱</div>
-              <div class="user-li-msg">
-                <input type="text" name="mail" value="123@123.com" class="form-control">
+                <input type="text" name="phone" value="{{ current_user.phone }}" class="form-control" disabled>
               </div>
             </div>
             <div class="user-li">
               <div class="user-li-title"></div>
               <div class="user-li-msg">
-                <button type="button" class="btn btn-primary">保存</button>
-                <button type="button" class="btn btn-warning">修改密码</button>
+                <button type="button" class="btn btn-warning" id="updatePwd">修改密码</button>
               </div>
 
             </div>
@@ -130,6 +111,81 @@
   {{ super() }}
   <script>
       $(document).ready(function () {
+          function new_pwd(){
+              swal({
+                  title: '请输入新密码',
+                  input: 'password',
+                  showCancelButton: true,
+                  confirmButtonText: '提交',
+                  showLoaderOnConfirm: true,
+                  preConfirm: function (pwd) {
+                      return new Promise(function (resolve, reject) {
+                          $.ajax({
+                              type: "POST",
+                              url: '{{ url_for('api.update_pwd') }}',
+                              data: JSON.stringify(
+                                  {
+                                      'u_id': '{{ current_user.id }}',
+                                      'pwd': pwd
+                                  }
+                              ),
+                              cache: false,
+                              dataType: 'json',
+                              contentType: 'application/json',
+                              success: function (res) {
+                                  if (res.resCode === 'ok') resolve(res.msg);
+                                  else reject(res.msg)
+                              },
+                              fail: function (err) {
+                                  reject(err)
+                              }
+                          })
+                      })
+                  }
+              }).then(
+                  function (res) {
+                      swal(res, '', 'success')
+                  }
+              )
+          }
+
+          $('#updatePwd').click(function()
+              {
+                  swal({
+                      title: '请输入原密码',
+                      input: 'password',
+                      showCancelButton: true,
+                      confirmButtonText: '下一步',
+                      showLoaderOnConfirm: true,
+                      preConfirm: function (pwd) {
+                          return new Promise(function (resolve, reject) {
+                              $.ajax({
+                                  type: "POST",
+                                  url: '{{ url_for('api.auth_pwd') }}',
+                                  data: JSON.stringify(
+                                      {
+                                          'u_id': '{{ current_user.id }}',
+                                          'pwd': pwd
+                                      }
+                                  ),
+                                  cache: false,
+                                  dataType: 'json',
+                                  contentType: 'application/json',
+                                  success: function (res) {
+                                      if (res.resCode === 'ok') resolve(res.msg);
+                                      else reject(res.msg)
+                                  },
+                                  fail: function (err) {
+                                      reject(err)
+                                  }
+                              })
+                          })
+                      }
+                  }).then(
+                      new_pwd
+                  )
+              }
+          );
       })
   </script>
 {% endblock %}

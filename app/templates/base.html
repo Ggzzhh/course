@@ -6,6 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="author" content="Ggzzhh" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" type="text/css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/model.css') }}" type="text/css">
@@ -25,6 +26,16 @@
   {{ moment.include_moment() }}
   <script src="{{ url_for('static', filename='js/sweetalert2.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/_ajax.js') }}"></script>
+  <script>
+      var csrftoken = $('meta[name=csrf-token]').attr('content');
+      $.ajaxSetup({
+          beforeSend: function(xhr, settings) {
+              if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", csrftoken)
+              }
+          }
+      });
+  </script>
   {% block _scripts %}
 
   {% endblock %}

@@ -5,14 +5,16 @@
 
 from flask import jsonify, redirect, render_template, url_for, current_app, request
 
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 
+from app.models import User
+from app.decorators import admin_required, user_required
 from . import main
 
 
 @main.route('/')
-# @login_required
 def index():
+    # logout_user()
     classifies = ['党建', '十八大', '等等等', '四矿']
     return render_template('main/index.html',
                            page_title=current_app.config['SYSTEMNAME'], classifies=classifies)
@@ -20,11 +22,33 @@ def index():
 
 @main.route('/login', methods=['POST', 'GET'])
 def login():
-    if request.method == 'POST':
-        data = request.data
-        print(data)
+    msg = ''
+
+    if current_user.is_user():
         return redirect(url_for('main.index'))
-    return render_template('main/login.html', page_title=current_app.config['SYSTEMNAME'])
+
+    if current_user.is_moderator():
+        return '管理页面'
+
+    if request.method == 'POST':
+        data = request.form
+        user = User.query.filter_by(phone=data['phone_num']).first()
+        if user:
+            if data['password'] == user.password:
+                login_user(user)
+                return redirect(url_for('main.index'))
+            else:
+                msg = '密码错误！请重试！'
+        else:
+            msg = '用户不存在!'
+    return render_template('main/login.html', page_title=current_app.config['SYSTEMNAME'], msg=msg)
+
+
+@main.route('/user/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(request.args.get('next') or url_for('main.index'))
 
 
 @main.route('/course/<int:id>/detail')
@@ -41,6 +65,7 @@ def course_detail(id):
 
 
 @main.route('/exam/<int:course_id>/detail')
+@user_required
 def exam_detail(course_id):
     detail = {
         'course_id': course_id,
@@ -67,6 +92,7 @@ def exam_detail(course_id):
 
 
 @main.route('/exam/<int:exam_id>/progress')
+@user_required
 def exam(exam_id):
     return '考卷'
 
@@ -97,6 +123,7 @@ def course_video(course_id):
 
 
 @main.route('/user/learn_center')
+@user_required
 def learn_center():
     course = {
         'title': '学习十八大重要讲话',
@@ -110,6 +137,7 @@ def learn_center():
 
 
 @main.route('/user/examination')
+@user_required
 def examination():
     exam = {
         'title': '学习十八大重要讲话',
@@ -123,6 +151,7 @@ def examination():
 
 
 @main.route('/user/exercise')
+@user_required
 def exercise():
     exam = {
         'title': '学习十八大重要讲话',
@@ -136,9 +165,12 @@ def exercise():
 
 
 @main.route('/user/archives')
+@user_required
 def archives():
     return render_template('user/archives.html')
 
+
 @main.route('/user/info')
+@user_required
 def info():
     return render_template('user/info.html')

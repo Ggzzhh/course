@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# 作者: Ggzzhh
+# 创建时间: 2018/10/22
 
 # 导入依赖包
 from datetime import timedelta

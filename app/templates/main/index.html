@@ -119,11 +119,11 @@
 {% block page_content %}
   <div class="flex-column justify-content-center align-items-center">
     <div class="container">
-      {% if not current_user.is_authenticated %}
+      {% if current_user.is_authenticated %}
         <div class="show-user">
           <div class="user-info">
-            <a href="/user/learn_center">张小四</a>
-            <a href="#">退出</a>
+            <a href="/user/learn_center">{{ current_user.name }}（{{ current_user.phone }}）</a>
+            <a href="{{ url_for('main.logout') }}">退出</a>
           </div>
           <div class="learning">
             <div class="learn-item1">

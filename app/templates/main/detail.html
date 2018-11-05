@@ -49,7 +49,7 @@
           <div class="detail-des"><span class="title">培训类型： </span>{{ course.classify }}</div>
           <div class="detail-des"><span class="title">开始时间：</span> {{ course.newstime }}</div>
           <div class="detail-btn">
-            {% if not current_user.is_authenticated %}
+            {% if current_user.is_authenticated %}
               {% if '没有选择这门课' == '' %}
                 <button class="btn btn-lg btn-primary" id="choiceCourseBtn">立即选课</button>
               {% else %}

@@ -18,7 +18,7 @@
         <div class="nav-li"><a href="#">HOME</a></div>
         <div class="nav-li"><a href="/">党建课堂</a></div>
         <div class="nav-li myactive">
-          {% if not current_user.is_authenticated %}
+          {% if current_user.is_authenticated %}
             <a href="{{ url_for('main.learn_center', user_id=1) }}">学习中心</a>
           {% else %}
             <a href="{{ url_for('main.login', next=active_page) }}">登录</a>

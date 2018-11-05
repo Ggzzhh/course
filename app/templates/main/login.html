@@ -5,8 +5,9 @@
 {% block content %}
   <div class="container">
     <div class="logo">
+      <a href="#">
       <img src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
-{#      {{ page_title }}#}
+      </a>
     </div>
     <div class="login-container flex justify-content-center align-items-center">
       <div class="login">
@@ -23,7 +24,7 @@
                 <div class="message"></div>
               </div>
               <div class="field">
-                <input class="control password" type="password" required >
+                <input class="control password" name="password" type="password" required >
                 <label class="animated">密码</label>
                 <div class="message"></div>
               </div>
@@ -43,7 +44,15 @@
 {% block _scripts %}
   <script>
       let RIGHT_NUM = false;
+
       $(document).ready(function () {
+          let msg = '{{ msg }}';
+          if (msg !== ''){
+              swal('{{ msg }}', '', 'error')
+          }
+
+          $('.control').val('');
+
           $('#phoneNum').bind('input propertychange', function () {
               let val = $(this).val();
               // console.log(val);
