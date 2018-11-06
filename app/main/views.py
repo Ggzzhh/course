@@ -99,26 +99,27 @@ def exam(exam_id):
 
 @main.route('/course/<int:course_id>/video')
 def course_video(course_id):
-    videos = [
-        {
-            'title': '小猪佩奇11111111111111',
-            'src': '../../static/videos/pig1.mp4',
-            'percent': '58',
-            'duration': '5:03'
-        },
-        {
-            'title': '小猪佩奇2222222222222221231231231232222222222223333333',
-            'src': '../../static/videos/pig2.mp4',
-            'percent': '81',
-            'duration': '5:03'
-        },
-        {
-            'title': '小猪佩奇3',
-            'src': '../../static/videos/pig3.mp4',
-            'percent': '3',
-            'duration': '5:03'
-        }
-    ]
+    # videos = [
+    #     {
+    #         'title': '小猪佩奇11111111111111',
+    #         'src': '../../static/videos/pig1.mp4',
+    #         'percent': '58',
+    #         'duration': '5:03'
+    #     },
+    #     {
+    #         'title': '小猪佩奇2222222222222221231231231232222222222223333333',
+    #         'src': '../../static/videos/pig2.mp4',
+    #         'percent': '81',
+    #         'duration': '5:03'
+    #     },
+    #     {
+    #         'title': '小猪佩奇3',
+    #         'src': '../../static/videos/pig3.mp4',
+    #         'percent': '3',
+    #         'duration': '5:03'
+    #     }
+    # ]
+    videos=[]
     return render_template('main/play_video.html', videos=videos)
 
 

@@ -74,6 +74,36 @@ class AnonymousUser(AnonymousUserMixin):
 login_manager.anonymous_user = AnonymousUser
 
 
+class Choice(db.Model):
+    __tablename__ = 'choices'
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        self.update_nums()
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), primary_key=True)
+    video_nums = db.Column(db.Integer, default=0)
+    finish_nums = db.Column(db.Integer, default=0)
+    newstime = db.Column(db.Date, default=datetime.now().date())
+
+    def update_nums(self):
+        if self.course:
+            self.video_nums = len(self.course.videos.all())
+            db.session.add(self)
+            db.session.commit()
+
+
+class UserVideo(db.Model):
+    __tablename__ = 'user_videos'
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    video_id = db.Column(db.Integer, db.ForeignKey('videos.id'), primary_key=True)
+    duration = db.Column(db.Integer, default=0)
+    learn_time = db.Column(db.Integer, default=0)
+    learn_status = db.Column(db.Boolean, default=False)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -86,6 +116,16 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(64))
     phone = db.Column(db.String(11), unique=True)
     password = db.Column(db.String(64), nullable=False)
+    choices = db.relationship('Choice',
+                              foreign_keys=[Choice.user_id],
+                              backref=db.backref('user', lazy='joined'),
+                              lazy='dynamic'
+                              )
+    u_videos = db.relationship('UserVideo',
+                              foreign_keys=[UserVideo.user_id],
+                              backref=db.backref('user', lazy='joined'),
+                              lazy='dynamic'
+                              )
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def can(self, permissions):
@@ -103,3 +143,61 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<用户 %r>' % self.name
+
+
+class Course(db.Model):
+    __tablename__ = 'courses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(256))
+    need_exam = db.Column(db.Boolean, default=False)
+    need_learn = db.Column(db.Boolean, default=True)
+    is_public = db.Column(db.Boolean, default=False)
+    # 课程总时长 计算分钟数
+    duration = db.Column(db.Integer, default=0)
+    classify_id = db.Column(db.Integer, db.ForeignKey('classifies.id'))
+    videos = db.relationship('Video',
+                             backref='course',
+                             lazy='dynamic',
+                             cascade='all, delete-orphan')
+    choices = db.relationship('Choice',
+                              foreign_keys=[Choice.course_id],
+                              backref=db.backref('course', lazy='joined'),
+                              lazy='dynamic'
+                              )
+
+    def __repr__(self):
+        return '<课程 %r>' % self.name
+
+
+class Video(db.Model):
+    __tablename__ = 'videos'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(256))
+    # 总时长 按秒计算
+    duration = db.Column(db.Integer)
+    video_src = db.Column(db.String(512))
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
+    u_videos = db.relationship('UserVideo',
+                               foreign_keys=[UserVideo.video_id],
+                               backref=db.backref('video', lazy='joined'),
+                               lazy='dynamic'
+                               )
+
+    def __repr__(self):
+        return '<视频 %r>' % self.title
+
+
+class Classify(db.Model):
+    __tablename__ = 'classifies'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
+    courses = db.relationship('Course', backref='classify', lazy='dynamic')
+
+    def __repr__(self):
+        return '<视频 %r>' % self.title
+
+    __str__ = __repr__
+

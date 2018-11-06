@@ -185,7 +185,11 @@
       <div class="video-head-left">
         <a href="javascript:history.back(-1)">返回</a>
         <div class="course-title">
-          当前视频: <<span>标题</span> - <span id="videoTitle">{{ videos[0].title }}</span>>
+          当前视频: <<span>标题</span> - <span id="videoTitle">
+          {% if videos %}
+            {{ videos[0].title }}
+          {% endif %}
+        </span>>
         </div>
       </div>
       <div class="video-head-right">
@@ -207,17 +211,22 @@
             目录
           </div>
           <div class="menu-ul">
-            {% for video in videos %}
-              <div class="menu-li" d-src="{{ video.src }}" d-title="{{ video.title }}">
-                <div class="menu-li-title">
-                  {{ loop.index }} {{ video.title }}
+            {% if videos %}
+              {% for video in videos %}
+                <div class="menu-li" d-src="{{ video.src }}" d-title="{{ video.title }}">
+                  <div class="menu-li-title">
+                    {{ loop.index }} {{ video.title }}
+                  </div>
+                  <div class="menu-li-progress">
+                    {{ model.progress('学习进度：', video.percent) }}
+                  </div>
                 </div>
-                <div class="menu-li-progress">
-                  {{ model.progress('学习进度：', video.percent) }}
-                </div>
+              {% endfor %}
+            {% else %}
+              <div class="nothing">
+                无视频
               </div>
-            {% endfor %}
-
+            {% endif %}
           </div>
         </div>
       </div>
@@ -238,10 +247,17 @@
       $(document).ready(function () {
           let chimee = new ChimeePlayer({
               wrapper: '#wrapper',  // video dom容器
-              src: '{{ videos[0].src }}',
+              {% if videos %}
+                  src: '{{ videos[0].src }}',
+              {% else %}
+                  src: '',
+              {% endif %}
+
               controls: true
           });
-          chimee.title = '{{ videos[0].title }}';
+          {% if videos %}
+              chimee.title = '{{ videos[0].title }}';
+          {% endif %}
 
           function loadVideo(src, title){
               chimee.controls = false;
