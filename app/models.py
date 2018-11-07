@@ -5,6 +5,7 @@
 
 from datetime import datetime
 
+from flask import url_for
 from flask_login import UserMixin, AnonymousUserMixin
 
 from . import db, login_manager
@@ -78,20 +79,47 @@ class Choice(db.Model):
     __tablename__ = 'choices'
 
     def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
+        super(Choice, self).__init__(**kwargs)
         self.update_nums()
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), primary_key=True)
     video_nums = db.Column(db.Integer, default=0)
     finish_nums = db.Column(db.Integer, default=0)
-    newstime = db.Column(db.Date, default=datetime.now().date())
+    last_seen = db.Column(db.DateTime, default=datetime.now())
+
+    def to_json(self):
+        data = {
+            'user_id': self.user_id,
+            'course_id': self.course_id,
+            'course_name': self.course.name if self.course else None,
+            'course_url': url_for('main.course_detail', id=self.course_id),
+            'newstime': self.course.newstime if self.course else None,
+            'is_pass': '已通过' if self.is_pass() else '未通过',
+            'learn_rate': self.learn_rate()
+        }
+        return data
+
+    def is_pass(self):
+        self.update_nums()
+        return False if self.video_nums == 0 else self.finish_nums >= self.video_nums
 
     def update_nums(self):
         if self.course:
             self.video_nums = len(self.course.videos.all())
             db.session.add(self)
             db.session.commit()
+
+    def update_seen(self):
+        self.last_seen = datetime.now()
+        db.session.add(self)
+        db.session.commit()
+
+    def learn_rate(self):
+        if self.finish_nums < 1:
+            return 0
+        self.update_nums()
+        return round(self.finish_nums / self.video_nums * 100)
 
 
 class UserVideo(db.Model):
@@ -122,11 +150,34 @@ class User(UserMixin, db.Model):
                               lazy='dynamic'
                               )
     u_videos = db.relationship('UserVideo',
-                              foreign_keys=[UserVideo.user_id],
-                              backref=db.backref('user', lazy='joined'),
-                              lazy='dynamic'
-                              )
+                               foreign_keys=[UserVideo.user_id],
+                               backref=db.backref('user', lazy='joined'),
+                               lazy='dynamic'
+                               )
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    def to_json(self):
+        current_choice = self.choices.order_by(Choice.last_seen.desc()).first()
+
+        if current_choice:
+            current_choice = current_choice.to_json()
+        else:
+            current_choice = {
+                'user_id': None,
+                'course_id': None,
+                'course_name': '没有正在学习的课程,请尽快选课',
+                'course_url': '#',
+                'newstime': '',
+                'is_pass': '',
+                'learn_rate': 0
+            }
+
+        data = {
+            'name': self.name,
+            'phone': self.phone,
+            'current_choice': current_choice,
+        }
+        return data
 
     def can(self, permissions):
         return self.role is not None and \
@@ -150,9 +201,11 @@ class Course(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256))
+    img_url = db.Column(db.String(256), default='static/images/bg.jpg')
     need_exam = db.Column(db.Boolean, default=False)
     need_learn = db.Column(db.Boolean, default=True)
     is_public = db.Column(db.Boolean, default=False)
+    newstime = db.Column(db.Date, default=datetime.now().date())
     # 课程总时长 计算分钟数
     duration = db.Column(db.Integer, default=0)
     classify_id = db.Column(db.Integer, db.ForeignKey('classifies.id'))
@@ -165,6 +218,58 @@ class Course(db.Model):
                               backref=db.backref('course', lazy='joined'),
                               lazy='dynamic'
                               )
+
+    def to_json(self):
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'classify': self.classify.name if self.classify else None,
+            'type': self.get_type(),
+            'duration': self.duration,
+            'newstime': self.newstime,
+            'img_url': self.img_url
+        }
+        return data
+
+    @staticmethod
+    def filter_type(query, _type):
+        if _type == 'public':
+            return query.filter(Course.is_public == 1)
+        if _type == 'exam':
+            return query.filter(
+                Course.need_exam == 1,
+                Course.is_public == 0,
+                Course.need_learn == 0
+            )
+        if _type == 'learn':
+            return query.filter(
+                Course.need_exam == 0,
+                Course.is_public == 0,
+                Course.need_learn == 1
+            )
+        if _type == 'all':
+            return query.filter(
+                Course.need_exam == 1,
+                Course.is_public == 0,
+                Course.need_learn == 1
+            )
+        return query
+
+    def get_type(self):
+
+        if self.is_public:
+            res = '公共'
+        elif self.need_exam and self.need_learn:
+            res = '培训'
+        elif not self.need_learn and self.need_exam:
+            res = '考试'
+        elif self.need_learn and not self.need_exam:
+            res = '学习'
+        else:
+            res = ''
+        return res
+
+
 
     def __repr__(self):
         return '<课程 %r>' % self.name
@@ -196,8 +301,13 @@ class Classify(db.Model):
     name = db.Column(db.String(128))
     courses = db.relationship('Course', backref='classify', lazy='dynamic')
 
+    @staticmethod
+    def all_to_list():
+        cls = Classify.query.order_by(Classify.id).all()
+        return [c.name for c in cls]
+
     def __repr__(self):
-        return '<视频 %r>' % self.title
+        return '<课程分类 %r>' % self.name
 
     __str__ = __repr__
 

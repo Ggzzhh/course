@@ -1,6 +1,5 @@
 {% extends 'main/base.html' %}
 {% import 'main/_models.html' as models %}
-{% set course_status = 'notpass' %}
 {% block _head %}
   {{ super() }}
   <style>
@@ -119,7 +118,7 @@
 {% block page_content %}
   <div class="flex-column justify-content-center align-items-center">
     <div class="container">
-      {% if current_user.is_authenticated %}
+      {% if current_user.is_user() %}
         <div class="show-user">
           <div class="user-info">
             <a href="/user/learn_center">{{ current_user.name }}（{{ current_user.phone }}）</a>
@@ -129,29 +128,31 @@
             <div class="learn-item1">
               <div class="text">
                 当前正在学习:
-                <a href="#">
-                  学习十八大培训(
-                  {% if course_status == 'pass' %}
-                    <span class="green">已通过</span>
+                <a href="{{ user_info.current_choice.course_url }}">
+                  {{ user_info.current_choice.course_name }}
+                  {% if user_info.current_choice.is_pass == '已通过' %}
+                    <span class="green">(已通过)</span>
+                  {% elif user_info.current_choice.is_pass == '未通过' %}
+                    <span class="red">(未通过)</span>
                   {% else %}
-                    <span class="red">未通过</span>
+                    <span></span>
                   {% endif %}
-                  )
+
                 </a>
               </div>
             </div>
-              {{ model.progress('学习进度：', '0') }}
+            {{ model.progress('学习进度：', user_info.current_choice.learn_rate) }}
           </div>
         </div>
       {% endif %}
-      <div class="classify gary">
+      <div class="classify gary" id="classify">
         <dl class="filter-type">
           <dt class="filter-type-name">学习分类</dt>
           <dd class="filter-item-wrap">
             <div class="filter-item-list">
-              <div class="filter-item current">不限</div>
+              <div class="filter-item u-classify">不限</div>
               {% for classify in classifies %}
-                <div class="filter-item">{{ classify }}</div>
+                <div class="filter-item u-classify">{{ classify }}</div>
               {% endfor %}
             </div>
           </dd>
@@ -160,11 +161,11 @@
           <dt class="filter-type-name">学习类型</dt>
           <dd class="filter-item-wrap">
             <div class="filter-item-list">
-              <div class="filter-item current">不限</div>
-              <div class="filter-item">公共</div>
-              <div class="filter-item">学习</div>
-              <div class="filter-item">考试</div>
-              <div class="filter-item">培训</div>
+              <div class="filter-item u-type" data-type="other">不限</div>
+              <div class="filter-item u-type" data-type="public">公共</div>
+              <div class="filter-item u-type" data-type="learn">学习</div>
+              <div class="filter-item u-type" data-type="exam">考试</div>
+              <div class="filter-item u-type" data-type="all">培训</div>
             </div>
           </dd>
         </dl>
@@ -172,22 +173,99 @@
           <dt class="filter-type-name">时间排序</dt>
           <dd class="filter-item-wrap">
             <div class="filter-item-list">
-              <div class="filter-item current">倒序</div>
-              <div class="filter-item">正序</div>
+              <div class="filter-item u-order">倒序</div>
+              <div class="filter-item u-order">正序</div>
             </div>
           </dd>
         </dl>
       </div>
-
       <div class="trains row">
-        {% for foo in range(8) %}
-          <div class="col-md-3 col-sm-3 animated bounce">
-            {{ models.course_card('学习十八大培训', url_for('main.course_detail', id=1), '培训', '2018-11-11', 200) }}
+        {% for per in pers %}
+          <div class="col-md-3 col-sm-3">
+            {{ models.course_card(per['name'],
+            url_for('main.course_detail', id=per['id']),
+            per['type'],
+            per['classify'],
+            per['newstime'],
+            per['duration'],
+            img_url=per['img_url']) }}
           </div>
         {% endfor %}
       </div>
-
-    {{ model.pagination() }}
+      {{ model.pagination_widget(pagination, 'main.index',
+          classify=classify, type=course_type,
+          order=order) }}
     </div>
   </div>
+{% endblock %}
+
+{% block _scripts %}
+  <script>
+      function getIndexUrl(page, type, order, classify){
+          let baseUrl = '{{ url_for('main.index') }}';
+          return baseUrl + '?page=' + page + '&type='
+              + type + '&order=' + order + '&classify='
+              + classify + '#classify';
+      }
+
+      $(document).ready(function () {
+          console.log(window.location.hash);
+          let page = getQueryVariable('page');
+          let type = getQueryVariable('type');
+          let order = getQueryVariable('order');
+          let classify = getQueryVariable('classify');
+          (function check_order() {
+              if (order == null) order = 'desc';
+              let dic = {
+                  'desc': '倒序',
+                  'asc': '正序'
+              };
+              $('.u-order').each(function () {
+                  if($(this).text() === dic[order]) {
+                      $(this).addClass('current')
+                  }
+              });
+          }());
+
+          (function check_type() {
+              if (type == null) type = 'other';
+              let dic = {
+                  'public': '公共',
+                  'learn': '学习',
+                  'exam': '考试',
+                  'all': '培训',
+                  'other': '不限'
+              };
+              $('.u-type').each(function () {
+                  if($(this).text() === dic[type]) {
+                      $(this).addClass('current')
+                  }
+              });
+          }());
+
+          (function check_classify() {
+              if (classify == null) classify = '不限';
+              $('.u-classify').each(function () {
+                  if($(this).text() === classify) {
+                      $(this).addClass('current')
+                  }
+              });
+          }());
+
+          $('.u-order').click(function () {
+              if ($(this).text() === '正序')
+                  window.location.href = getIndexUrl(page, type, 'asc', classify);
+              else
+                  window.location.href = getIndexUrl(page, type, 'desc', classify);
+          });
+
+          $('.u-classify').click(function () {
+              window.location.href = getIndexUrl(page, type, order, $(this).text());
+          });
+
+          $('.u-type').click(function () {
+              window.location.href = getIndexUrl(page, $(this).attr('data-type'), order, classify);
+          });
+      })
+  </script>
 {% endblock %}

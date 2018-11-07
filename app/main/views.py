@@ -7,17 +7,48 @@ from flask import jsonify, redirect, render_template, url_for, current_app, requ
 
 from flask_login import login_user, logout_user, login_required, current_user
 
-from app.models import User
+from app.models import User, Classify, Course
 from app.decorators import admin_required, user_required
 from . import main
 
 
 @main.route('/')
 def index():
-    # logout_user()
-    classifies = ['党建', '十八大', '等等等', '四矿']
+    # 获取查询条件
+    page = request.args.get('page', 1, type=int)
+    classify = request.args.get('classify')
+    order = request.args.get('order', 'desc', type=str)
+    course_type = request.args.get('type', 'other')
+    # 基础查询
+    query = Course.query.join(Classify)
+    if classify and classify != '不限':
+        query = query.filter(Classify.name == classify)
+    if course_type:
+        query = Course.filter_type(query, course_type)
+    if order == 'desc':
+        query = query.order_by(Course.newstime.desc(), Course.id.desc())
+    else:
+        query = query.order_by(Course.newstime, Course.id.desc())
+
+    pagination = query.paginate(page,
+                                per_page=current_app.config['INDEX_PAGE'],
+                                error_out=False)
+    pers = [per.to_json() for per in pagination.items]
+
+    user_info = {}
+    if current_user.is_user():
+        user_info = current_user.to_json()
+    classifies = Classify.all_to_list()
+
     return render_template('main/index.html',
-                           page_title=current_app.config['SYSTEMNAME'], classifies=classifies)
+                           pagination=pagination,
+                           pers=pers,
+                           classify=classify,
+                           course_type=course_type,
+                           order=order,
+                           page_title=current_app.config['SYSTEMNAME'],
+                           classifies=classifies,
+                           user_info=user_info)
 
 
 @main.route('/login', methods=['POST', 'GET'])

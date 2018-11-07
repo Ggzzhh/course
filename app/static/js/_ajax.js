@@ -36,3 +36,12 @@ function a_json(url, type, data, success, error, cache) {
         }
     })
 }
+
+function getQueryVariable(key){
+    let reg = new RegExp("(^|&)"+ key +"=([^&]*)(&|$)");
+    let re = window.location.search.substr(1).match(reg);
+    if (re != null)
+        return decodeURI(re[2]);
+    else
+        return null;
+}

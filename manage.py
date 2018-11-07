@@ -24,9 +24,9 @@ def c_test_data():
     from app.test import CreateCourse, CreateVideo
     cc = CreateCourse()
     cv = CreateVideo()
-    # for i in range(20):
-    #     cc.create_course()
-    cv.run(20)
+    for i in range(20):
+        cc.create_course()
+    cv.run(80)
 
 
 manager.add_command("shell", Shell(make_context=make_shell_context))

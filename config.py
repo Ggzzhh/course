@@ -44,6 +44,8 @@ class Config:
     UPLOAD_FOLDER = 'app//static//image'
 
     # 分页设置 每页显示数量
+    # 首页分页
+    INDEX_PAGE = 8
 
     # 系统名称
     SYSTEMNAME = '党建课堂'

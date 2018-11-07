@@ -53,8 +53,8 @@ def create_app(config_name):
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    # 设置session设置的过期时间 也就是关闭浏览器30分钟内不用重新登录
-    app.permanent_session_lifetime = timedelta(minutes=30)
+    # 设置session设置的过期时间
+    app.permanent_session_lifetime = timedelta(hours=24)
 
     # 在正常使用时打开ssl安全协议
     if not app.debug and not app.testing and not app.config['SSL_DISABLE']:

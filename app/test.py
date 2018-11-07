@@ -12,8 +12,17 @@ class CreateCourse:
 
     def __init__(self):
         self.user = User.query.first()
-        self.cls = Classify.query.first()
+        if self.user is None:
+            self.user = User(name='测试人员', phone='18737532369', password='123')
+            db.session.add(self.user)
+        if not Classify.query.all():
+            cls1 = Classify(name='测试1')
+            cls2 = Classify(name='测试2')
+            db.session.add(cls1)
+            db.session.add(cls2)
         self.base_num = 100
+        db.session.commit()
+        self.cls = Classify.query.all()
 
     @staticmethod
     def random_bool():
@@ -28,10 +37,10 @@ class CreateCourse:
             is_public=pub
         )
         self.base_num += 1
-        course.classify_id = self.cls.id
-        choice = self._create_choice(course)
+        course.classify = choice(self.cls)
+        _choice = self._create_choice(course)
         db.session.add(course)
-        db.session.add(choice)
+        db.session.add(_choice)
         db.session.commit()
 
     def _create_choice(self, course):
