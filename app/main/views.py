@@ -2,9 +2,9 @@
 # -*- coding:utf-8 -*- 
 # 作者: Ggzzhh
 # 创建时间: 2018/10/22
+from urllib.parse import quote
 
 from flask import jsonify, redirect, render_template, url_for, current_app, request
-
 from flask_login import login_user, logout_user, login_required, current_user
 
 from app.models import User, Classify, Course
@@ -36,7 +36,7 @@ def index():
     pers = [per.to_json() for per in pagination.items]
 
     user_info = {}
-    if current_user.is_user():
+    if current_user.is_user:
         user_info = current_user.to_json()
     classifies = Classify.all_to_list()
 
@@ -53,12 +53,13 @@ def index():
 
 @main.route('/login', methods=['POST', 'GET'])
 def login():
+    next = request.args.get('next')
     msg = ''
 
-    if current_user.is_user():
+    if current_user.is_user:
         return redirect(url_for('main.index'))
 
-    if current_user.is_moderator():
+    if current_user.is_moderator:
         return '管理页面'
 
     if request.method == 'POST':
@@ -67,12 +68,15 @@ def login():
         if user:
             if data['password'] == user.password:
                 login_user(user)
-                return redirect(url_for('main.index'))
+                return redirect(next if next else url_for('main.index'))
             else:
                 msg = '密码错误！请重试！'
         else:
             msg = '用户不存在!'
-    return render_template('main/login.html', page_title=current_app.config['SYSTEMNAME'], msg=msg)
+    return render_template('main/login.html',
+                           page_title=current_app.config['SYSTEMNAME'],
+                           msg=msg,
+                           next=next)
 
 
 @main.route('/user/logout')
@@ -84,15 +88,13 @@ def logout():
 
 @main.route('/course/<int:id>/detail')
 def course_detail(id):
-    course = {
-        'title': '学习十八大重要讲话',
-        'newstime': '2018-11-12',
-        'classify': '学习、考试',
-        'total_time': '200',
-        'img_url': '../../static/images/bg.jpg'
-    }
-    return render_template('main/detail.html', page_title=current_app.config['SYSTEMNAME'],
-                           course=course)
+    course = Course.query.get(id)
+    if course:
+        course = course.to_json()
+    return render_template('main/detail.html',
+                           page_title=current_app.config['SYSTEMNAME'],
+                           course=course,
+                           active_page=quote(url_for('main.course_detail', id=id)))
 
 
 @main.route('/exam/<int:course_id>/detail')

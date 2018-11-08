@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% import '_models.html' as model %}
-{% set active_page='/' %}
 {% block _head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/head_base.css') }}" type="text/css">
 {% endblock %}
@@ -16,7 +15,7 @@
         <div class="nav-li"><a href="#">HOME</a></div>
         <div class="nav-li myactive"><a href="/">党建课堂</a></div>
         <div class="nav-li">
-          {% if current_user.is_authenticated %}
+          {% if current_user.is_user %}
             <a href="{{ url_for('main.learn_center') }}">学习中心</a>
           {% else %}
             <a href="{{ url_for('main.login', next=active_page) }}">登录</a>

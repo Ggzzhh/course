@@ -14,9 +14,23 @@
     .detail-right {
       width: 100%;
       padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .detail-right .title {
+     .detail-right .title {
+      margin: 0;
+      padding: 0;
+      line-height: 1.2rem;
       font-size: 1.2rem;
+      font-weight: 600;
+      color: #21202e;
+    }
+    .detail-right .name {
+      margin: 0;
+      padding: 0;
+      line-height: 1.4rem;
+      font-size: 1.4rem;
       font-weight: 600;
       color: #21202e;
     }
@@ -31,8 +45,8 @@
       font-weight: bold;
       color: #ce1b28;
     }
-    .ml-3 {
-      margin-left: 30px;
+    .mr-3 {
+      margin-right: 30px;
     }
   </style>
 {% endblock %}
@@ -44,27 +58,31 @@
           <img src="{{ course.img_url }}" alt="课程图片">
         </div>
         <div class="detail-right">
-          <div class="detail-title"><span class="title">{{ course.title }}</span></div>
-          <div class="detail-des"><span class="title">学习时长： </span>{{ course.total_time }} 分钟</div>
-          <div class="detail-des"><span class="title">培训类型： </span>{{ course.classify }}</div>
+          <div class="detail-title"><span class="name">{{ course.name }}</span></div>
+          <div class="detail-des"><span class="title">学习时长： </span>{{ course.duration }} 分钟</div>
+          <div class="detail-des"><span class="title">学习分类： </span>{{ course.classify }}</div>
+          <div class="detail-des"><span class="title">学习类型： </span>{{ course.type }}</div>
           <div class="detail-des"><span class="title">开始时间：</span> {{ course.newstime }}</div>
           <div class="detail-btn">
-            {% if current_user.is_authenticated %}
-              {% if '没有选择这门课' == '' %}
+            {% if current_user.is_user %}
+              {% set percent = current_user.get_course_percent(course.id) %}
+              {% if not current_user.has_course(course.id) %}
                 <button class="btn btn-lg btn-primary" id="choiceCourseBtn">立即选课</button>
               {% else %}
-                {% if '含有学习' != '' %}
-                  {% if '学习进度大于0%' != '' %}
-                    <button class="btn btn-lg btn-success" id="learnBtn">继续学习(50%)</button>
-                  {% else %}
-                    <button class="btn btn-lg btn-success" id="learnBtn">开始学习</button>
+                {% if course.type == '公共' %}
+                  <button class="btn btn-lg btn-success" id="learnBtn">开始学习</button>
+                {% else %}
+                  {% if course.type in ['学习', '培训']  %}
+                    {% if percent and percent > 0 %}
+                      <button class="btn btn-lg btn-success mr-3" id="learnBtn">继续学习({{ percent }}%)</button>
+                    {% else %}
+                      <button class="btn btn-lg btn-success mr-3" id="learnBtn">开始学习</button>
+                    {% endif %}
                   {% endif %}
-                {% endif %}
-                {% if '含有考试' != '' %}
-                  {% if '含有学习且学习进度100%' != '' %}
-                    <button type="button" class="btn btn-lg btn-warning ml-3" id="examBtn">进行考试</button>
-                  {% else %}
-                    <button type="button" class="btn btn-lg btn-warning ml-3"
+                  {% if course.type == '考试' or (course.type == '培训' and percent == 100) %}
+                    <button type="button" class="btn btn-lg btn-warning" id="examBtn">进行考试</button>
+                  {% elif course.type == '培训' and percent < 100 %}
+                    <button type="button" class="btn btn-lg btn-warning"
                             data-toggle="popover" title="无法考试"
                             data-content="请先完成所有学习后再进行考试！">进行考试</button>
                   {% endif %}
@@ -72,7 +90,12 @@
               {% endif %}
 
             {% else %}
-              <span class="tips">请登录后进行更多操作</span>
+              {% if course.type == '公共' %}
+                <button class="btn btn-lg btn-success" id="learnBtn">开始学习</button>
+              {% else %}
+                <span class="tips">请 <a href="{{ url_for('main.login', next=active_page) }}">登录</a> 后进行更多操作</span>
+              {% endif %}
+
             {% endif %}
           </div>
         </div>
@@ -83,6 +106,7 @@
 
 {% block _scripts %}
   <script>
+    // todo: 实现按钮的功能，比如立即选课
       $(function () {
           $("[data-toggle='popover']").popover();
 

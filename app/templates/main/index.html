@@ -118,7 +118,7 @@
 {% block page_content %}
   <div class="flex-column justify-content-center align-items-center">
     <div class="container">
-      {% if current_user.is_user() %}
+      {% if current_user.is_user %}
         <div class="show-user">
           <div class="user-info">
             <a href="/user/learn_center">{{ current_user.name }}（{{ current_user.phone }}）</a>
@@ -254,17 +254,17 @@
 
           $('.u-order').click(function () {
               if ($(this).text() === '正序')
-                  window.location.href = getIndexUrl(page, type, 'asc', classify);
+                  window.location.href = getIndexUrl(1, type, 'asc', classify);
               else
-                  window.location.href = getIndexUrl(page, type, 'desc', classify);
+                  window.location.href = getIndexUrl(1, type, 'desc', classify);
           });
 
           $('.u-classify').click(function () {
-              window.location.href = getIndexUrl(page, type, order, $(this).text());
+              window.location.href = getIndexUrl(1, type, order, $(this).text());
           });
 
           $('.u-type').click(function () {
-              window.location.href = getIndexUrl(page, $(this).attr('data-type'), order, classify);
+              window.location.href = getIndexUrl(1, $(this).attr('data-type'), order, classify);
           });
       })
   </script>

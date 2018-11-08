@@ -56,19 +56,23 @@ class Role(db.Model):
 class AnonymousUser(AnonymousUserMixin):
 
     @staticmethod
-    def can(permissions):
+    def can(self):
+        return False
+
+    @property
+    def is_administrator(self):
+        return False
+
+    @property
+    def is_user(self):
+        return False
+
+    @property
+    def is_moderator(self):
         return False
 
     @staticmethod
-    def is_administrator():
-        return False
-
-    @staticmethod
-    def is_user():
-        return False
-
-    @staticmethod
-    def is_moderator():
+    def has_course():
         return False
 
 
@@ -183,12 +187,25 @@ class User(UserMixin, db.Model):
         return self.role is not None and \
                (self.role.permissions & permissions) == permissions
 
+    def get_course_percent(self, course_id):
+        res = self.get_choice_course(course_id)
+        return res.learn_rate() if res else 0
+
+    def has_course(self, course_id):
+        return True if self.get_choice_course(course_id) else False
+
+    def get_choice_course(self, course_id):
+        return self.choices.filter(Choice.course_id == course_id).first()
+
+    @property
     def is_administrator(self):
         return self.can(Permission.ADMINISTRATOR)
 
+    @property
     def is_user(self):
         return self.can(Permission.LEARN)
 
+    @property
     def is_moderator(self):
         return self.can(Permission.ADD_COURSE)
 
@@ -201,7 +218,7 @@ class Course(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256))
-    img_url = db.Column(db.String(256), default='static/images/bg.jpg')
+    img_url = db.Column(db.String(256), default='/static/images/bg.jpg')
     need_exam = db.Column(db.Boolean, default=False)
     need_learn = db.Column(db.Boolean, default=True)
     is_public = db.Column(db.Boolean, default=False)
