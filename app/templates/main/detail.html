@@ -18,7 +18,7 @@
       flex-direction: column;
       justify-content: space-between;
     }
-     .detail-right .title {
+    .detail-right .title {
       margin: 0;
       padding: 0;
       line-height: 1.2rem;
@@ -66,11 +66,11 @@
           <div class="detail-btn">
             {% if current_user.is_user %}
               {% set percent = current_user.get_course_percent(course.id) %}
-              {% if not current_user.has_course(course.id) %}
+              {% if not current_user.has_course(course.id) and course.type != '公共' %}
                 <button class="btn btn-lg btn-primary" id="choiceCourseBtn">立即选课</button>
               {% else %}
                 {% if course.type == '公共' %}
-                  <button class="btn btn-lg btn-success" id="learnBtn">开始学习</button>
+                  <button class="btn btn-lg btn-success" id="s-learnBtn">开始学习</button>
                 {% else %}
                   {% if course.type in ['学习', '培训']  %}
                     {% if percent and percent > 0 %}
@@ -91,7 +91,7 @@
 
             {% else %}
               {% if course.type == '公共' %}
-                <button class="btn btn-lg btn-success" id="learnBtn">开始学习</button>
+                <button class="btn btn-lg btn-success" id="s-learnBtn">开始学习</button>
               {% else %}
                 <span class="tips">请 <a href="{{ url_for('main.login', next=active_page) }}">登录</a> 后进行更多操作</span>
               {% endif %}
@@ -106,22 +106,55 @@
 
 {% block _scripts %}
   <script>
-    // todo: 实现按钮的功能，比如立即选课
       $(function () {
           $("[data-toggle='popover']").popover();
 
           $("#choiceCourseBtn").click(function () {
-              console.log('选择这门课程！')
+              a_json(
+                  "{{ url_for('api.choice_course') }}",
+                  "PUT",
+                  JSON.stringify({
+                      'u_id': '{{ current_user.id }}',
+                      'c_id': '{{ course.id }}'
+                  }),
+                  function (data) {
+                      swal(data.msg, '', 'success').then(function () {
+                          window.location.reload()
+                      });
+                  }
+              )
           });
 
           $("#learnBtn").click(function () {
-              console.log('开始学习');
-              window.location = "{{ url_for('main.course_video', course_id=1) }}"
+              a_json(
+                  "{{ url_for('api.update_last_choice') }}",
+                  "PUT",
+                  JSON.stringify({
+                      'u_id': '{{ current_user.id }}',
+                      'c_id': '{{ course.id }}'
+                  }),
+                  function (data) {
+                      // console.log(data.msg);
+                      window.location = "{{ url_for('main.course_video', course_id=course.id) }}";
+                  }
+              );
+
+          });
+
+          $('#s-learnBtn').click(function () {
+              window.location = "{{ url_for('main.course_video', course_id=course.id) }}";
           });
 
           $("#examBtn").click(function () {
-              console.log('开始考试');
-              window.location = "{{ url_for('main.exam_detail', course_id=1) }}"
+              a_json(
+                  "{{ url_for('api.can_exam') }}?u_id={{ current_user.id }}&c_id={{ course.id }}",
+                  "GET",
+                  "",
+                  function (data) {
+                      // console.log(data.msg);
+                      window.location = "{{ url_for('main.exam_detail', course_id=course.id) }}"
+                  }
+              );
           });
       });
   </script>

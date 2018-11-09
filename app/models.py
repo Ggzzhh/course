@@ -90,6 +90,7 @@ class Choice(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), primary_key=True)
     video_nums = db.Column(db.Integer, default=0)
     finish_nums = db.Column(db.Integer, default=0)
+    point = db.Column(db.Integer)
     last_seen = db.Column(db.DateTime, default=datetime.now())
 
     def to_json(self):
@@ -125,6 +126,13 @@ class Choice(db.Model):
         self.update_nums()
         return round(self.finish_nums / self.video_nums * 100)
 
+    def can_exam(self):
+        c_type = self.course.get_type()
+        if c_type == '考试' or (c_type == '培训' and self.learn_rate() == 100):
+            return True
+        else:
+            return False
+
 
 class UserVideo(db.Model):
     __tablename__ = 'user_videos'
@@ -134,6 +142,17 @@ class UserVideo(db.Model):
     duration = db.Column(db.Integer, default=0)
     learn_time = db.Column(db.Integer, default=0)
     learn_status = db.Column(db.Boolean, default=False)
+
+    def get_percent(self):
+        if self.learn_time == 0:
+            return 0
+        return round(self.learn_time / self.duration * 100)
+
+    def update_status(self):
+        if self.learn_rate() == 100:
+            self.learn_status = True
+            db.session.add(self)
+            db.session.commit()
 
 
 class User(UserMixin, db.Model):
@@ -286,7 +305,13 @@ class Course(db.Model):
             res = ''
         return res
 
-
+    def update_duration(self):
+        duration = 0
+        for video in self.videos:
+            duration += video.duration
+        self.duration = duration // 60
+        db.session.add(self)
+        # db.session.commit()
 
     def __repr__(self):
         return '<课程 %r>' % self.name
@@ -306,6 +331,15 @@ class Video(db.Model):
                                backref=db.backref('video', lazy='joined'),
                                lazy='dynamic'
                                )
+
+    def to_json(self):
+        data = {
+            'id': self.id,
+            'title': self.title,
+            'src': self.video_src,
+            'duration': self.duration
+        }
+        return data
 
     def __repr__(self):
         return '<视频 %r>' % self.title

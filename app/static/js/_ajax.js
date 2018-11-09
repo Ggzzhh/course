@@ -11,10 +11,13 @@ function a_json(url, type, data, success, error, cache) {
         swal(data.msg);
     };
 
-    if (error == null) error = function (data){};
+    if (error == null) error = function (data){
+        swal(data.msg, '', 'error')
+    };
 
     if (cache == null) cache = true;
 
+    if (data == null) data = JSON.stringify({});
 
     $.ajax({
         type: type,
@@ -24,10 +27,8 @@ function a_json(url, type, data, success, error, cache) {
         dataType: 'json',
         contentType: 'application/json',
         success: function (data) {
-            if (data.error){
-                alert(data.error_message);
-                location.reload();
-            }
+            if (data.resCode === 'err')
+                error(data);
             else
                 success(data);
         },

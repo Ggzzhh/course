@@ -29,6 +29,7 @@
                 <img src="{{ course.img_url }}" alt="">
                 <div class="bg">
                   <div class="status">继续学习</div>
+                  <div class="status">删除课程</div>
                 </div>
 
               </div>
@@ -40,6 +41,7 @@
                   考试：已通过
                   <br>
                   学习进度： 123
+                  <br>
                 </div>
               </div>
             </div>
@@ -98,6 +100,11 @@
   {{ super() }}
   <script>
       $(document).ready(function () {
+          $('.learn-card').hover(function () {
+              $(this).find('.bg').css('opacity', '1')
+          }, function () {
+              $(this).find('.bg').css('opacity', '0')
+          })
       })
   </script>
 {% endblock %}

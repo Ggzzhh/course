@@ -7,7 +7,7 @@ from urllib.parse import quote
 from flask import jsonify, redirect, render_template, url_for, current_app, request
 from flask_login import login_user, logout_user, login_required, current_user
 
-from app.models import User, Classify, Course
+from app.models import User, Classify, Course, Choice, Video, UserVideo
 from app.decorators import admin_required, user_required
 from . import main
 
@@ -132,28 +132,25 @@ def exam(exam_id):
 
 @main.route('/course/<int:course_id>/video')
 def course_video(course_id):
-    # videos = [
-    #     {
-    #         'title': '小猪佩奇11111111111111',
-    #         'src': '../../static/videos/pig1.mp4',
-    #         'percent': '58',
-    #         'duration': '5:03'
-    #     },
-    #     {
-    #         'title': '小猪佩奇2222222222222221231231231232222222222223333333',
-    #         'src': '../../static/videos/pig2.mp4',
-    #         'percent': '81',
-    #         'duration': '5:03'
-    #     },
-    #     {
-    #         'title': '小猪佩奇3',
-    #         'src': '../../static/videos/pig3.mp4',
-    #         'percent': '3',
-    #         'duration': '5:03'
-    #     }
-    # ]
-    videos=[]
-    return render_template('main/play_video.html', videos=videos)
+    course = Course.query.get_or_404(course_id)
+    c_type = course.get_type()
+    videos = [video.to_json() for video in course.videos]
+    course = course.to_json()
+    if c_type == '培训':
+        if current_user.is_user:
+            choice = current_user.choices.filter(Choice.course_id == course_id).first()
+            course['learn_rate'] = choice.learn_rate()
+            for video in videos:
+                uv = UserVideo.query.filter(
+                    UserVideo.user_id == current_user.id,
+                    UserVideo.video_id == video['id']
+                    ).first()
+                video['percent'] = uv.get_percent()
+        else:
+            return redirect(
+                url_for('main.login',
+                        next=url_for('main.course_video', course_id=course_id)))
+    return render_template('main/play_video.html', videos=videos, course=course)
 
 
 @main.route('/user/learn_center')
