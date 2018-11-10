@@ -16,8 +16,8 @@
         </span>>
         </div>
       </div>
-      {% if course.learn_rate %}
-        <div class="video-head-right">
+      {% if course.get('learn_rate') is not none %}
+        <div class="video-head-right" id="learn-rate">
           {{ model.progress('课程进度：', course.learn_rate) }}
         </div>
       {% endif %}
@@ -67,10 +67,10 @@
 {% endblock %}
 {% block _scripts %}
   <script src="http://lib.baomitu.com/chimee-player/1.1.9/chimee-player.browser.js"></script>
+  <script src="{{ url_for('static', filename='js/randomQuestion.js') }}"></script>
   <script>
-
       $(document).ready(function () {
-          let interval;
+          let interval, timer=0;
           let chimee = new ChimeePlayer({
               wrapper: '#wrapper',  // video dom容器
               {% if videos %}
@@ -82,10 +82,40 @@
           });
           {% if videos %}
               chimee.title = '{{ videos[0].title }}';
+              chimee.id = '{{ videos[0].id }}';
           {% endif %}
 
           chimee.on('play', start_timer);
           chimee.on('pause', stop_timer);
+
+          function updateLearnTime(u_id, c_id, v_id) {
+              if (u_id == null || c_id == null || v_id == null) return;
+              let data = JSON.stringify({
+                  u_id: u_id,
+                  c_id: c_id,
+                  v_id: v_id
+              });
+              a_json(
+                  '{{ url_for("api.update_learn_time") }}',
+                  'PUT',
+                  data,
+                  function (data) {
+                      $('.menu-li').each(function () {
+                          if ($(this).attr('data-id') == v_id){
+                              let progress = $(this).find('.progress-bar'),
+                                  rate = data.rate['video_rate']+"%",
+                                  learnProgress = $('#learn-rate').find('.progress-bar');
+                                  learnRate = data.rate['learn_rate'] + "%";
+                              progress.css('width', rate);
+                              progress.text(rate);
+                              learnProgress.css('width', learnRate);
+                              learnProgress.text(learnRate);
+
+                          }
+                      });
+                  }
+              );
+          }
 
           function loadVideo(src, title, id){
               chimee.controls = false;
@@ -99,15 +129,47 @@
           }
 
           function start_timer(){
-              {% if not current_user.is_user  %}
+              let c = this;
+              {% if current_user.is_user and course.type != '公共' %}
                   interval = setInterval(function () {
-                      let x = chimee.currentTime;
-                      console.log(x)
-                  }, 3000);
+                      timer ++;
+                      if (timer === 5){
+                          updateLearnTime('{{ current_user.id }}', '{{ course.id }}', c.id);
+                          timer = 0;
+                      }
+
+                      {% if course.validate %}
+                          if (Math.round(c.currentTime) % {{ course.validate|default(300) }} === 0) {
+                              c.pause();
+                              let q = generateQuestion(),
+                                  a = getAnswer(q);
+                              swal({
+                                  title: '请回答: ' + q + ' = ?',
+                                  input: 'text',
+                                  confirmButtonText: '确定',
+                                  allowOutsideClick: false,
+                                  preConfirm: function (answer) {
+                                      return new Promise(function (resolve, reject) {
+                                          if (answer == a){
+                                              resolve()
+                                          }
+                                          else {
+                                              reject('回答错误!')
+                                          }
+                                      })
+                                  }
+                              }).then(function () {
+                                  c.play();
+                              })
+                          }
+                      {% endif %}
+
+                  }, 1000);
               {% endif %}
           }
 
           function stop_timer(){
+              console.log('pause');
               clearInterval(interval);
           }
 
@@ -131,13 +193,15 @@
               let src = $(this).attr('data-src'),
                   title = $(this).attr('data-title'),
                   id = $(this).attr('data-id');
-              loadVideo(src, title);
+              loadVideo(src, title, id);
               $('#videoTitle').text(title);
-              chimee.on('play', timer);
+              chimee.on('play', start_timer);
+              chimee.on('pause', stop_timer);
           });
 
 
       });
 
   </script>
+
 {% endblock %}

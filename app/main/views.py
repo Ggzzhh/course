@@ -145,7 +145,8 @@ def course_video(course_id):
                     UserVideo.user_id == current_user.id,
                     UserVideo.video_id == video['id']
                     ).first()
-                video['percent'] = uv.get_percent()
+                if uv:
+                    video['percent'] = uv.get_percent()
         else:
             return redirect(
                 url_for('main.login',

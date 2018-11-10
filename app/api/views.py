@@ -56,6 +56,9 @@ def choice_course():
             user = User.query.get_or_404(u_id)
             course = Course.query.get_or_404(c_id)
             ch = Choice(user=user, course=course)
+            for video in course.videos:
+                uv = UserVideo.create(user, video)
+                db.session.add(uv)
             ch.update_nums()
             return jsonify({'resCode': 'ok', 'msg': '选课成功！'})
     return jsonify({'resCode': 'err', 'msg': '选课失败！无数据或数据错误！'})
@@ -79,7 +82,6 @@ def update_last_choice():
 @api.route('/can-exam')
 @user_required
 def can_exam():
-    print(request.args)
     u_id = request.args.get('u_id')
     c_id = request.args.get('c_id')
     if u_id and c_id:
@@ -91,6 +93,42 @@ def can_exam():
             return jsonify({'resCode': 'err', 'msg': '请先学习完毕后再进行考试！'})
     return jsonify({'resCode': 'err', 'msg': '出现错误！无数据或数据错误！'})
 
+
+@api.route('/update-learn-time', methods=['PUT'])
+@user_required
+def update_learn_time():
+    data = request.get_json()
+    if data:
+        u_id = data.get('u_id')
+        c_id = data.get('c_id')
+        v_id = data.get('v_id')
+        ch = Choice.query.filter(
+            Choice.user_id == u_id, Choice.course_id == c_id).first()
+        uv = UserVideo.query.filter(
+            UserVideo.user_id == u_id, UserVideo.video_id == v_id).first()
+        video_rate = 0
+        learn_rate = 0
+        if uv and ch:
+            status = uv.learn_status
+            if status:
+                return jsonify({
+                    'resCode': 'ok',
+                    'msg': '该视频已经学习完毕！'
+                })
+            uv.update_learn_time()
+            if uv.learn_status != status:
+                ch.finish_nums += 1
+            video_rate = uv.get_percent()
+            learn_rate = ch.learn_rate()
+        return jsonify({
+            'resCode': 'ok',
+            'msg': '更新完毕！',
+            'rate': {
+                'video_rate': video_rate,
+                'learn_rate': learn_rate
+            }
+        })
+    return jsonify({'resCode': 'err', 'msg': '出现错误！无数据或数据错误！'})
 
 
 

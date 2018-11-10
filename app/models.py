@@ -148,11 +148,23 @@ class UserVideo(db.Model):
             return 0
         return round(self.learn_time / self.duration * 100)
 
+    def update_learn_time(self):
+        if self.learn_time + 5 < self.duration:
+            self.learn_time += 5
+        else:
+            self.learn_time = self.duration
+        self.update_status()
+
     def update_status(self):
-        if self.learn_rate() == 100:
+        if self.learn_time >= self.duration:
             self.learn_status = True
             db.session.add(self)
             db.session.commit()
+
+    @staticmethod
+    def create(user, video):
+        return UserVideo(user=user, video=video, duration=video.duration)
+
 
 
 class User(UserMixin, db.Model):
@@ -241,6 +253,7 @@ class Course(db.Model):
     need_exam = db.Column(db.Boolean, default=False)
     need_learn = db.Column(db.Boolean, default=True)
     is_public = db.Column(db.Boolean, default=False)
+    validate = db.Column(db.Integer, default=0)
     newstime = db.Column(db.Date, default=datetime.now().date())
     # 课程总时长 计算分钟数
     duration = db.Column(db.Integer, default=0)
@@ -263,7 +276,8 @@ class Course(db.Model):
             'type': self.get_type(),
             'duration': self.duration,
             'newstime': self.newstime,
-            'img_url': self.img_url
+            'img_url': self.img_url,
+            'validate': self.validate
         }
         return data
 
