@@ -92,22 +92,33 @@ class Choice(db.Model):
     finish_nums = db.Column(db.Integer, default=0)
     point = db.Column(db.Integer)
     last_seen = db.Column(db.DateTime, default=datetime.now())
+    is_pass = db.Column(db.Boolean, default=False)
 
     def to_json(self):
         data = {
             'user_id': self.user_id,
             'course_id': self.course_id,
-            'course_name': self.course.name if self.course else None,
+            'course': self.course.to_json() if self.course else None,
             'course_url': url_for('main.course_detail', id=self.course_id),
             'newstime': self.course.newstime if self.course else None,
-            'is_pass': '已通过' if self.is_pass() else '未通过',
+            'is_pass': '已通过' if self.is_pass else '未通过',
             'learn_rate': self.learn_rate()
         }
         return data
 
-    def is_pass(self):
+    def update_pass(self):
         self.update_nums()
-        return False if self.video_nums == 0 else self.finish_nums >= self.video_nums
+        learn_pass = False if self.video_nums == 0 else self.finish_nums >= self.video_nums
+        exam_pass = self.point and self.point >= 60
+        _type = self.course.get_type()
+        if _type == '学习':
+            self.is_pass = learn_pass
+        if _type == '考试':
+            self.is_pass = exam_pass
+        if _type == '培训':
+            self.is_pass = learn_pass and exam_pass
+        db.session.add(self)
+        db.session.commit()
 
     def update_nums(self):
         if self.course:
@@ -124,7 +135,7 @@ class Choice(db.Model):
         if self.finish_nums < 1:
             return 0
         self.update_nums()
-        return round(self.finish_nums / self.video_nums * 100)
+        return min(round(self.finish_nums / self.video_nums * 100), 100)
 
     def can_exam(self):
         c_type = self.course.get_type()
@@ -164,7 +175,6 @@ class UserVideo(db.Model):
     @staticmethod
     def create(user, video):
         return UserVideo(user=user, video=video, duration=video.duration)
-
 
 
 class User(UserMixin, db.Model):
@@ -272,6 +282,7 @@ class Course(db.Model):
         data = {
             'id': self.id,
             'name': self.name,
+            'url': url_for('main.course_video', course_id=self.id),
             'classify': self.classify.name if self.classify else None,
             'type': self.get_type(),
             'duration': self.duration,

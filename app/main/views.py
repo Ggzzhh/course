@@ -136,9 +136,10 @@ def course_video(course_id):
     c_type = course.get_type()
     videos = [video.to_json() for video in course.videos]
     course = course.to_json()
-    if c_type == '培训':
+    if c_type in ['培训', '学习']:
         if current_user.is_user:
             choice = current_user.choices.filter(Choice.course_id == course_id).first()
+            choice.update_seen()
             course['learn_rate'] = choice.learn_rate()
             for video in videos:
                 uv = UserVideo.query.filter(
@@ -157,15 +158,8 @@ def course_video(course_id):
 @main.route('/user/learn_center')
 @user_required
 def learn_center():
-    course = {
-        'title': '学习十八大重要讲话',
-        'newstime': '2018-11-12',
-        'classify': '学习、考试',
-        'total_time': '200',
-        'img_url': '../../static/images/bg.jpg',
-        'url': url_for('main.course_detail', id=1)
-    }
-    return render_template('user/learn_center.html', course=course)
+
+    return render_template('user/learn_center.html')
 
 
 @main.route('/user/examination')

@@ -3,6 +3,19 @@
 
 {% block _head %}
   {{ super() }}
+  <style>
+    .tpl-pro .my-progress .text {
+      text-align: start;
+      color: inherit;
+    }
+    .status a {
+      color: inherit;
+    }
+
+    .status a:hover {
+      text-decoration: none;
+    }
+  </style>
 {% endblock %}
 
 {% block page_left %}
@@ -10,89 +23,18 @@
 {% endblock %}
 
 {% block page_right %}
-  <div class="learn">
+  <div class="learn" id="learn">
     <div class="learn-head">
       <span class="glyphicon glyphicon-book"></span>
       在线学习
     </div>
     <div class="learn-navs">
-      <a class="learn-nav choice">全部</a>
-      <a class="learn-nav">学习中</a>
-      <a class="learn-nav">已通过</a>
+      <a class="learn-nav choice" id="course-all">全部</a>
+      <a class="learn-nav" id="course-learning">学习中</a>
+      <a class="learn-nav" id="course-pass">已通过</a>
     </div>
     <div class="learn-content">
-      {% if not learn_cards %}
-        <div class="row">
-          <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="learn-card">
-              <div class="thumbnail">
-                <img src="{{ course.img_url }}" alt="">
-                <div class="bg">
-                  <div class="status">继续学习</div>
-                  <div class="status">删除课程</div>
-                </div>
 
-              </div>
-              <div class="learn-card-content">
-                <a href="{{ course.url }}">
-                  {{ course.title }}
-                </a>
-                <div class="other">
-                  考试：已通过
-                  <br>
-                  学习进度： 123
-                  <br>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="learn-card">
-              <div class="thumbnail">
-                <img src="{{ course.img_url }}" alt="">
-                <div class="bg">
-                  <div class="status">继续学习</div>
-                </div>
-
-              </div>
-              <div class="learn-card-content">
-                <a href="{{ course.url }}">
-                  {{ course.title }}
-                </a>
-                <div class="other">
-                  考试：已通过
-                  <br>
-                  学习进度： 123
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-4 col-md-6 col-sm-12">
-            <div class="learn-card">
-              <div class="thumbnail">
-                <img src="{{ course.img_url }}" alt="">
-                <div class="bg">
-                  <div class="status">继续学习</div>
-                </div>
-
-              </div>
-              <div class="learn-card-content">
-                <a href="{{ course.url }}">
-                  {{ course.title }}
-                </a>
-                <div class="other">
-                  考试：已通过
-                  <br>
-                  学习进度： 123
-                </div>
-              </div>
-            </div>
-          </div>
-          </div>
-        </div>
-      {% else %}
-        {{ user_model.nothing() }}
-      {% endif %}
     </div>
   </div>
 {% endblock %}
@@ -100,11 +42,148 @@
   {{ super() }}
   <script>
       $(document).ready(function () {
-          $('.learn-card').hover(function () {
-              $(this).find('.bg').css('opacity', '1')
-          }, function () {
-              $(this).find('.bg').css('opacity', '0')
-          })
-      })
+          getLearnCards('all', 1);
+
+          $('#course-all').click(function () {
+              getLearnCards('all', 1);
+          });
+
+          $('#course-learning').click(function () {
+              getLearnCards('learning', 1);
+          });
+
+          $('#course-pass').click(function () {
+              getLearnCards('pass', 1);
+          });
+
+
+      });
+
+      function getLearnCards(type, page) {
+          a_json(
+              '{{ url_for("api.get_learn_card") }}' + "?type=" + type + "&page=" + page,
+              'GET',
+              '',
+              function (data) {
+                  let content = data.data;
+                  content.type = type;
+                  let tpl = document.getElementById('tpl').innerHTML;
+                  let html = juicer(tpl, content);
+                  $('.learn-content').html(html);
+
+                  $('.learn-card').hover(function () {
+                      $(this).find('.bg').css('opacity', '1')
+                  }, function () {
+                      $(this).find('.bg').css('opacity', '0')
+                  });
+
+                  $('.delete-choice').click(function () {
+                      let that = this;
+                      swal({
+                          title: '确定删除吗？',
+                          text: '你将无法恢复它！',
+                          type: 'warning',
+                          showCancelButton: true,
+                          confirmButtonColor: '#3085d6',
+                          cancelButtonColor: '#d33',
+                          confirmButtonText: '确定删除！',
+                      }).then(function(){
+                          a_json(
+                              "/api/choice/"+$(that).attr('data-c-id')+"/"+$(that).attr('data-u-id'),
+                              "DELETE",
+                              "",
+                              function (data) {
+                                  swal(data.msg, '', 'success').then(
+                                      function () {
+                                          document.location.reload()
+                                      }
+                                  );
+
+                              }
+                          )
+                      }, ()=>{});
+
+                  });
+
+
+              }
+          )
+      }
   </script>
+
+  <script id="tpl" type="text/template">
+    <div class="row" style="width: 100%">
+      {@if choices != null}
+      {@each choices as choice}
+      <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+        <div class="learn-card animated fadeIn">
+          <div class="thumbnail">
+            <img src="${ choice.course.img_url }" alt="">
+            <div class="bg">
+              <div class="status">
+                <a href="${ choice.course.url }">继续学习</a>
+              </div>
+              <div class="status">
+                <span class="delete-choice"
+                      data-c-id="${ choice.course_id }"
+                      data-u-id="${ choice.user_id }"
+                >删除课程</span>
+              </div>
+            </div>
+          </div>
+          <div class="learn-card-content">
+            <a href="${ choice.course_url }">
+              ${ choice.course.name }
+            </a>
+            <div class="other">
+              {@if choice.is_pass == '已通过'}
+              状态：<span class="green">${ choice.is_pass }</span>
+              {@else}
+              状态：<span class="red">${ choice.is_pass }</span>
+              {@/if}
+              <div class="tpl-pro">
+                {{ model.progress('学习进度:', '${ choice.learn_rate }') }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {@/each}
+    </div>
+    <div style="width: 100%">
+      <nav style="padding-left: 15px; padding-right: 15px">
+        <ul class="pager">
+          {@if prev_num}
+          <li class="previous">
+            <a style="cursor: pointer"
+               onclick="getLearnCards('${type}', '${prev_num}')">
+              <span aria-hidden="true">&larr;</span> 上一页</a>
+          </li>
+          {@else}
+          <li class="previous disabled">
+            <a href="#"><span aria-hidden="true">&larr;</span> 上一页</a>
+          </li>
+          {@/if}
+
+          {@if next_num}
+          <li class="next">
+            <a style="cursor: pointer"
+               onclick="getLearnCards('${type}', '${next_num}')">
+              下一页 <span aria-hidden="true">&rarr;</span></a>
+          </li>
+
+          {@else}
+          <li class="next disabled">
+            <a href="#">下一页 <span aria-hidden="true">&rarr;</span></a></a>
+          </li>
+          {@/if}
+        </ul>
+      </nav>
+    </div>
+    {@else}
+    {{ user_model.nothing() }}
+    {@/if}
+
+  </script>
+
 {% endblock %}

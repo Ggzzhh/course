@@ -50,6 +50,7 @@
 {% endblock %}
 {% block _scripts %}
   {{ super() }}
+  <script src="{{ url_for('static', filename='js/juicer-min.js') }}"></script>
   <script>
       $(document).ready(function () {
           $('.learn-nav').click(function () {
