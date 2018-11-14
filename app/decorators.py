@@ -6,8 +6,8 @@
 
 from functools import wraps
 
-from flask import abort
-from flask_login import current_user, login_required
+from flask import abort, redirect, url_for
+from flask_login import current_user, login_required, login_manager
 
 from app.models import Permission
 
@@ -25,7 +25,12 @@ def permission_required(permission):
 
 
 def admin_required(fun):
-    return permission_required(Permission.ADD_COURSE)(fun)
+    @wraps(fun)
+    def decorator_function(*args, **kwargs):
+        if not current_user.can(Permission.ADMINISTRATOR):
+            return redirect(url_for('admin.login'))
+        return fun(*args, **kwargs)
+    return decorator_function
 
 
 def user_required(fun):
