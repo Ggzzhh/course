@@ -293,6 +293,39 @@ class Course(db.Model):
         return data
 
     @staticmethod
+    def get_json(data):
+        name = data.get('name')
+        _type = data.get('type')
+        classify_id = data.get('classify')
+        validate = data.get('validate')
+        img_url = data.get('img_url')
+
+        course = Course(name=name)
+
+        if classify_id:
+            course.classify_id = classify_id
+        if validate:
+            try:
+                validate = int(validate)
+            except:
+                validate = 0
+            course.validate = validate
+        if img_url:
+            course.img_url = img_url
+
+        if _type == 'public':
+            course.is_public = True
+            course.need_exam = False
+            course.need_learn = False
+        if _type == 'exam':
+            course.need_exam = True
+            course.need_learn = False
+        if _type == 'all':
+            course.need_exam = True
+
+        return course
+
+    @staticmethod
     def filter_type(query, _type):
         if _type == 'public':
             return query.filter(Course.is_public == 1)
@@ -378,8 +411,10 @@ class Classify(db.Model):
     courses = db.relationship('Course', backref='classify', lazy='dynamic')
 
     @staticmethod
-    def all_to_list():
+    def all_to_list(need_id=False):
         cls = Classify.query.order_by(Classify.id).all()
+        if need_id:
+            return [[c.id, c.name] for c in cls]
         return [c.name for c in cls]
 
     def __repr__(self):

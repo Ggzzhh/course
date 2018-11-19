@@ -7,8 +7,10 @@ from flask import url_for, render_template, current_app, request, abort, redirec
 from flask_login import login_manager, login_user, current_user, logout_user
 
 from . import admin
+from app import db
 from app.decorators import admin_required
-from app.models import User
+from app.models import User, Classify, Course
+from app.tools import save_to_static
 
 login_manager.login_view = 'admin.login'
 
@@ -51,13 +53,42 @@ def logout():
 @admin.route('/index')
 @admin_required
 def frm_index():
-    return render_template('admin/index.html')
+    route = [
+        {
+            'type': 'link',
+            'text': '首页',
+            'link': url_for('admin.frm_index')
+        }
+    ]
+    return render_template('admin/index.html', route=route)
 
 
-@admin.route('/course-manage/add')
+@admin.route('/course-manage/add', methods=["GET", "POST"])
 @admin_required
 def add_course():
-    return render_template('admin/add_course.html')
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '新增课程',
+            'link': url_for('admin.add_course')
+        }
+    ]
+    if request.method == 'POST':
+        form = request.form.to_dict()
+        img = request.files.get('img')
+        course = Course.get_json(form)
+        db.session.commit()
+        # 存储图片并返回地址
+        img_src = save_to_static(img, 'test.jpeg')
+        print(img_src)
+    classifies = Classify.all_to_list(True)
+    return render_template('admin/add_course.html',
+                           route=route,
+                           classifies=classifies)
 
 
 @admin.route('/course-manage/list')

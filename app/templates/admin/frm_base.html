@@ -14,22 +14,30 @@
   <link rel="shortcut icon" href="/static/image/favicon.ico" type="image/x-icon"/>
   <style>
     body {
-      height: 100vh;
+      height: 80vh;
     }
     .content-head {
       width: 100%;
-      margin: 1rem;
-      padding-bottom: 0.5rem;
+      padding: 1rem 1rem 0.5rem 1rem;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .head-container {
+      width: 100%;
       line-height: 2.5rem;
       font-weight: 500;
+      padding-bottom: 0.5rem;
       border-bottom: 1px solid gray;
       display: flex;
       flex-direction: row;
       justify-content: flex-start;
       align-items: center;
     }
+
     .content-body {
-      margin: 0 1rem;
       width: 100%;
       height: 100%;
     }
@@ -38,6 +46,7 @@
       padding-left: 10px;
       margin: 0;
       display: flex;
+      color: rgb(51, 122, 183);
       list-style: none;
     }
 
@@ -57,19 +66,21 @@
 {% endblock %}
 {% block content %}
   <div class="content-head">
-    <a href="{{ url_for('admin.frm_index') }}">
-      <span class="glyphicon glyphicon-home"></span>
-    </a>
-    <ol class="route">
-      <li><a href="1">课程管理</a></li>
-      <li><a href="2">新增课程</a></li>
-      <li><a href="3">哈哈哈</a></li>
-      {% if route %}
+    <div class="head-container">
+      <a href="{{ url_for('admin.frm_index') }}">
+        <span class="glyphicon glyphicon-home"></span>
+      </a>
+      <ol class="route">
         {% for r in route %}
-
+          {% if r.get('type') and r['type'] == 'text' %}
+            <li>{{ r.get('text') }}</li>
+          {% elif r.get('type') and r['type'] == 'link' %}
+            <li><a href="{{ r['link'] }}">{{ r['text'] }}</a></li>
+          {% endif %}
         {% endfor %}
-      {% endif %}
-    </ol>
+      </ol>
+    </div>
+
   </div>
   <div class="content-body">
     {% block content_body %}

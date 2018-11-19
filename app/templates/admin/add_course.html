@@ -1,10 +1,168 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
+  <style>
+    .add-course {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      padding-top: 30px;
+      align-items: center;
+    }
 
+    .explain {
+      color: #ce1b28;
+      font-size: 0.875rem;
+      font-weight: 400;
+    }
+
+    .form {
+      height: 100%;
+      padding-right: 200px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .form > .form-group, .form > .radio {
+      font-weight: 700;
+      width: 50%;
+    }
+
+    .form-control {
+      box-shadow: 0 0 0 0;
+      border: 1px rgba(0,0,0,0) solid;
+    }
+
+    .help {
+      color: #9d9d9d;
+      font-size: 0.875rem;
+    }
+
+    input[type=file] {
+      margin-top: 5px;
+      display: flex;
+      font-size: 1rem;
+      color: #9d9d9d;
+    }
+
+    .img-rounded > img {
+      width: 240px;
+      height: 182px;
+    }
+
+    .submit {
+      width: 50%;
+      min-height: 100px;
+    }
+  </style>
 {% endblock %}
 {% block content_body %}
-  课程新增
+  <div class="add-course">
+    <form class="form" id="courseFrm" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="">课程名称</label>
+        <input type="text" name="name" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <div>课程类型</div>
+        <label class="radio-inline">
+          <input type="radio" name="type" value="public" checked> 公共
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="type" value="learn"> 学习
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="type" value="exam"> 考试
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="type" value="all"> 培训
+        </label>
+        <div class="explain">
+          公共：无需登录即可学习视频，无记录。 <br />
+          学习：需登录，课程只需学习即可通过。 <br />
+          考试：需登录，课程只需考试即可通过。 <br />
+          培训：需登录，课程需要学习完毕之后考试成绩大于60分才可通过。 <br />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>课程分类</label>
+        <select class="form-control" name="classify">
+          {% for classify in classifies %}
+            <option value="{{ classify[0] }}">{{ classify[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="">真人验证(单位：秒)</label>
+        <input type="number" name="validate" class="form-control" value="0">
+        <div class="explain">
+          默认0秒，即不会进行真人弹窗验证，如果该值x大于0，则视频每间隔x秒会弹出一个十以内的加法，回答正确方可继续学习。
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label" for="img">课程背景图</label>
+        <div class="img-rounded">
+          <img src="/static/images/bg.jpg" alt=""
+               class="img-thumbnail" id="uploadPreview">
+        </div>
+        <input id="uploadImage" type="file" name="img" accept="image/*"/>
+        <p class="help">图片大小不要超过2M, 且保存时会保存为jpeg格式</p>
+      </div>
+      <div class="submit">
+        <button type="submit" class="btn btn-primary">新增</button>
+      </div>
+    </form>
+
+  </div>
 {% endblock %}
 {% block _scripts %}
+  <script>
+      function upLoadImage(img, Preview_id) {
+          var reader = new FileReader();
 
+          reader.readAsDataURL(img);
+
+          reader.onerror = function () {
+              console.log("读取异常....");
+          };
+
+          reader.onload = function () {
+              // 压缩 经测试 确实会变小
+              // 创建canvas元素
+              var canvas = document.createElement("canvas");
+              // 创建2d画布 getContext() 方法返回一个用于在画布上绘图的环境。
+              var ctx = canvas.getContext('2d');
+              var image = new Image();
+              image.src = this.result;
+              return image.onload = function () {
+                  // 注释内是等比例缩放
+                  var width = 240; // image.width;
+                  var height = 182; // image.height;
+                  canvas.width = width;
+                  canvas.height = height;
+
+                  ctx.drawImage(image, 0, 0, width, height);
+                  var newImage = canvas.toDataURL("image/jpeg", 0.7);
+                  // console.log(newImage);
+                  $('#'+ Preview_id).attr("src", newImage);
+              };
+          };
+      }
+  </script>
+  <script>
+      $(document).ready(function () {
+          let img_file;
+          $('#uploadImage').change(function () {
+              img_file = this.files[0];
+              upLoadImage(img_file, 'uploadPreview');
+          });
+
+
+      });
+  </script>
 {% endblock %}

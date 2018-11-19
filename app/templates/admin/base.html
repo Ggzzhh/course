@@ -71,6 +71,7 @@
       width: 100%;
     }
 
+
     .nav-btn {
       font-size: 1rem;
       font-weight: 500;
@@ -110,6 +111,9 @@
       overflow: hidden;
     }
 
+    .nav-title {
+      min-width: 6rem;
+    }
   </style>
 {% endblock %}
 {% block content %}
@@ -138,7 +142,7 @@
             </div>
             <div class="nav-li">
               <div class="nav-btn" data-toggle="collapse" data-target="#courseManage">
-                <div>
+                <div class="nav-title">
                   <span class="glyphicon glyphicon-facetime-video"></span> 课程管理
                 </div>
                 <span class="glyphicon glyphicon-chevron-down"></span>
@@ -150,11 +154,14 @@
                 <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.course_list") }}')">
                   课程列表
                 </div>
+                <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.course_list") }}')">
+                  课程分类
+                </div>
               </div>
             </div>
             <div class="nav-li">
               <div class="nav-btn" data-toggle="collapse" data-target="#userManage">
-                <div>
+                <div  class="nav-title">
                   <span class="glyphicon glyphicon-book"></span> 人员管理
                 </div>
                 <span class="glyphicon glyphicon-chevron-down"></span>
