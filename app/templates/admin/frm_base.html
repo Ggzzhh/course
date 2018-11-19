@@ -1,0 +1,98 @@
+{% extends "bootstrap/base.html" %}
+{% block html_attribs %} lang='zh-CN' {% endblock %}
+{% block head %}
+  <meta charset="UTF-8" />
+  <meta name="author" content="Ggzzhh" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/ifram.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert2.min.css') }}" type="text/css">
+  <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="shortcut icon" href="/static/image/favicon.ico" type="image/x-icon"/>
+  <style>
+    body {
+      height: 100vh;
+    }
+    .content-head {
+      width: 100%;
+      margin: 1rem;
+      padding-bottom: 0.5rem;
+      line-height: 2.5rem;
+      font-weight: 500;
+      border-bottom: 1px solid gray;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .content-body {
+      margin: 0 1rem;
+      width: 100%;
+      height: 100%;
+    }
+
+    .route {
+      padding-left: 10px;
+      margin: 0;
+      display: flex;
+      list-style: none;
+    }
+
+    .route a:hover {
+      text-decoration: none;
+    }
+
+    .route>li+li:before {
+      padding: 0 5px;
+      color: #ccc;
+      content: "/\00a0";
+    }
+  </style>
+  {% block _head %}
+
+  {% endblock %}
+{% endblock %}
+{% block content %}
+  <div class="content-head">
+    <a href="{{ url_for('admin.frm_index') }}">
+      <span class="glyphicon glyphicon-home"></span>
+    </a>
+    <ol class="route">
+      <li><a href="1">课程管理</a></li>
+      <li><a href="2">新增课程</a></li>
+      <li><a href="3">哈哈哈</a></li>
+      {% if route %}
+        {% for r in route %}
+
+        {% endfor %}
+      {% endif %}
+    </ol>
+  </div>
+  <div class="content-body">
+    {% block content_body %}
+
+    {% endblock %}
+  </div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  {{ moment.include_moment() }}
+  <script src="{{ url_for('static', filename='js/sweetalert2.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/_ajax.js') }}"></script>
+  <script>
+      var csrftoken = $('meta[name=csrf-token]').attr('content');
+      $.ajaxSetup({
+          beforeSend: function(xhr, settings) {
+              if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                  xhr.setRequestHeader("X-CSRFToken", csrftoken)
+              }
+          }
+      });
+  </script>
+  {% block _scripts %}
+
+  {% endblock %}
+{% endblock %}

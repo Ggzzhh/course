@@ -27,7 +27,7 @@ def permission_required(permission):
 def admin_required(fun):
     @wraps(fun)
     def decorator_function(*args, **kwargs):
-        if not current_user.can(Permission.ADMINISTRATOR):
+        if not current_user.is_moderator:
             return redirect(url_for('admin.login'))
         return fun(*args, **kwargs)
     return decorator_function

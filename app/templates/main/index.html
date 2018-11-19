@@ -129,7 +129,7 @@
               <div class="text">
                 当前正在学习:
                 <a href="{{ user_info.current_choice.course_url }}">
-                  {{ user_info.current_choice.course.name }}
+                  {{ user_info.current_choice.get('course').name }}
                   {% if user_info.current_choice.is_pass == '已通过' %}
                     <span class="green">(已通过)</span>
                   {% elif user_info.current_choice.is_pass == '未通过' %}
