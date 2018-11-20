@@ -1,9 +1,23 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-
+  <style>
+    .setting {
+      width: 50%;
+      font-weight: 700;
+    }
+  </style>
 {% endblock %}
 {% block content_body %}
-  系统设置
+  <div class="frm-container">
+    <div class="frm-content">
+      <div class="setting">
+        <div class="form-group">
+        <label for="">修改密码</label>
+        <input type="text" name="name" class="form-control" required>
+      </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 {% block _scripts %}
 

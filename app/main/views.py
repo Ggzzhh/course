@@ -20,7 +20,7 @@ def index():
     order = request.args.get('order', 'desc', type=str)
     course_type = request.args.get('type', 'other')
     # 基础查询
-    query = Course.query.join(Classify)
+    query = Course.query.join(Classify).filter(Course.status == 1)
     if classify and classify != '不限':
         query = query.filter(Classify.name == classify)
     if course_type:

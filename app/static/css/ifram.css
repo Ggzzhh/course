@@ -37,3 +37,61 @@ body {
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.4);
     background-color: rgba(0,0,0,.01);
 }
+
+.frm-container {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    padding-top: 30px;
+    align-items: center;
+}
+
+.explain {
+    color: #ce1b28;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.frm-content {
+    height: 100%;
+    padding-right: 200px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.form > .form-group, .form > .radio {
+    font-weight: 700;
+    width: 50%;
+}
+
+.form-control {
+    box-shadow: 0 0 0 0;
+    border: 1px rgba(0,0,0,0) solid;
+}
+
+.help {
+    color: #9d9d9d;
+    font-size: 0.875rem;
+}
+
+input[type=file] {
+    margin-top: 5px;
+    display: flex;
+    font-size: 1rem;
+    color: #9d9d9d;
+}
+
+.img-rounded > img {
+    width: 240px;
+    height: 182px;
+}
+
+.submit {
+    width: 50%;
+    min-height: 100px;
+}

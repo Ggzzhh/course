@@ -1,72 +1,15 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-  <style>
-    .add-course {
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      display: flex;
-      justify-content: center;
-      padding-top: 30px;
-      align-items: center;
-    }
 
-    .explain {
-      color: #ce1b28;
-      font-size: 0.875rem;
-      font-weight: 400;
-    }
-
-    .form {
-      height: 100%;
-      padding-right: 200px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-    }
-
-    .form > .form-group, .form > .radio {
-      font-weight: 700;
-      width: 50%;
-    }
-
-    .form-control {
-      box-shadow: 0 0 0 0;
-      border: 1px rgba(0,0,0,0) solid;
-    }
-
-    .help {
-      color: #9d9d9d;
-      font-size: 0.875rem;
-    }
-
-    input[type=file] {
-      margin-top: 5px;
-      display: flex;
-      font-size: 1rem;
-      color: #9d9d9d;
-    }
-
-    .img-rounded > img {
-      width: 240px;
-      height: 182px;
-    }
-
-    .submit {
-      width: 50%;
-      min-height: 100px;
-    }
-  </style>
 {% endblock %}
 {% block content_body %}
-  <div class="add-course">
-    <form class="form" id="courseFrm" method="post" enctype="multipart/form-data">
+  <div class="frm-container">
+    <form class="form frm-content" id="courseFrm" method="post" enctype="multipart/form-data">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label for="">课程名称</label>
         <input type="text" name="name" class="form-control" required>
+        <div class="explain">新添加的课程需要在课程列表中添加视频或试题，再进行发布后前端才会显示。</div>
       </div>
       <div class="form-group">
         <div>课程类型</div>
@@ -99,7 +42,7 @@
       </div>
       <div class="form-group">
         <label for="">真人验证(单位：秒)</label>
-        <input type="number" name="validate" class="form-control" value="0">
+        <input type="number" name="validate" class="form-control" value="0" >
         <div class="explain">
           默认0秒，即不会进行真人弹窗验证，如果该值x大于0，则视频每间隔x秒会弹出一个十以内的加法，回答正确方可继续学习。
         </div>
@@ -162,6 +105,16 @@
               upLoadImage(img_file, 'uploadPreview');
           });
 
+          $('input[name="type"]').change(function () {
+              if ($(this).val() === 'exam') {
+                  let v = $('input[name="validate"]');
+                  v.val(0);
+                  v.attr('disabled', 'disabled');
+              }
+              else {
+                  $('input[name="validate"]').attr('disabled', false)
+              }
+          });
 
       });
   </script>

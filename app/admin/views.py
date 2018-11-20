@@ -80,11 +80,15 @@ def add_course():
     if request.method == 'POST':
         form = request.form.to_dict()
         img = request.files.get('img')
-        course = Course.get_json(form)
+        course = Course.from_json(form)
+        db.session.add(course)
         db.session.commit()
         # 存储图片并返回地址
-        img_src = save_to_static(img, 'test.jpeg')
-        print(img_src)
+        img_url = save_to_static(img, 'course{}.jpeg'.format(course.id))
+        if img_url:
+            course.img_url = img_url
+            db.session.add(course)
+        return redirect(url_for('admin.course_list'))
     classifies = Classify.all_to_list(True)
     return render_template('admin/add_course.html',
                            route=route,
@@ -112,9 +116,15 @@ def user_list():
 @admin.route('/system-setting')
 @admin_required
 def system_setting():
+    route = [
+        {
+            'type': 'text',
+            'text': '系统设置'
+        }
+    ]
     if not current_user.is_administrator:
         return abort(403)
-    return render_template('admin/setting.html')
+    return render_template('admin/setting.html', route=route)
 
 
 

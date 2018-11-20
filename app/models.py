@@ -268,6 +268,7 @@ class Course(db.Model):
     # 课程总时长 计算分钟数
     duration = db.Column(db.Integer, default=0)
     classify_id = db.Column(db.Integer, db.ForeignKey('classifies.id'))
+    status = db.Column(db.Boolean, default=False)
     videos = db.relationship('Video',
                              backref='course',
                              lazy='dynamic',
@@ -293,7 +294,7 @@ class Course(db.Model):
         return data
 
     @staticmethod
-    def get_json(data):
+    def from_json(data):
         name = data.get('name')
         _type = data.get('type')
         classify_id = data.get('classify')
