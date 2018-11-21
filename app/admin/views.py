@@ -98,7 +98,19 @@ def add_course():
 @admin.route('/course-manage/list')
 @admin_required
 def course_list():
-    return render_template('admin/course_list.html')
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        }
+    ]
+    courses = [course.to_json() for course in Course.query.all()][:9]
+    return render_template('admin/course_list.html', route=route, courses=courses)
 
 
 @admin.route('/user-manage/add')

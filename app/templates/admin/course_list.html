@@ -1,9 +1,151 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
+  <style>
+    .list-container {
+      margin-top: 0.5rem;
+      width: 100%;
+      height: 100%;
+    }
 
+    .list-body {
+      margin: 0 1rem;
+    }
+
+    .list-head {
+      line-height: 1.8rem;
+      padding-left: 10px;
+      padding-right: 10px;
+      height: 40px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #cfcfcf;
+      color: #64646d;
+      font-weight: 500;
+    }
+    .search-content {
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-horizontal {
+      display: flex;
+      width: 40%;
+    }
+
+    .form-title {
+      min-width: 6rem;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .list-content {
+      margin-top: 30px;
+    }
+
+    .list-table {
+      width: 100%;
+      padding-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .list-table>table {
+      width: 100%;
+    }
+
+    .list-table>table>tbody>tr:nth-child(odd) {
+      background-color: #ebebeb;
+    }
+
+    .list-table>table>tbody>tr>td, .list-table>table>thead>tr>td {
+      padding-left: 10px;
+      line-height: 2rem;
+    }
+  </style>
 {% endblock %}
 {% block content_body %}
-  课程列表
+  {#           #}
+  <div class="list-container">
+    <div class="list-body">
+      <div class="list-search">
+        <div class="list-head">
+          <div>查找条件</div>
+          <div>
+            <button type="button" id="courseSearch" class="btn btn-success btn-sm">搜索</button>
+          </div>
+        </div>
+        <div class="search-content">
+          <div class="form-horizontal">
+            <div class="form-title">课程名称 * </div>
+            <input type="text" class="form-control" name="courseName" placeholder="请输入">
+          </div>
+          <div class="form-horizontal">
+            <div class="form-title">发布状态 * </div>
+            <select class="form-control" name="courseStatus">
+              <option value="1">已发布</option>
+              <option value="0">未发布</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="list-content">
+        <div class="list-head">
+          <div>课程列表</div>
+        </div>
+        <div class="list-table">
+          <table>
+            <thead>
+            <tr>
+              <td>名称</td>
+              <td>类型</td>
+              <td>分类</td>
+              <td>发布时间</td>
+              <td>课件数</td>
+              <td>选课人数</td>
+              <td>通过人数</td>
+              <td>状态</td>
+              <td>操作</td>
+            </tr>
+            </thead>
+            <tbody>
+            {% for course in courses %}
+              <tr>
+                <td>{{ course.name }}</td>
+                <td>{{ course.type }}</td>
+                <td>{{ course.classify }}</td>
+                <td>{{ course.newstime }}</td>
+                <td>{{ course.video_num }}</td>
+                <td>{{ course.choice_num }}</td>
+                <td>{{ course.pass_num }}</td>
+                <td>{{ course.status }}</td>
+                <td>
+                  <a href="#">修改</a>
+                  <a href="#">删除</a>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="list-pagination">
+          <nav aria-label="...">
+            <ul class="pager">
+              <li><a href="">上一页</a></li>
+              <li><a href="">下一页</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 {% block _scripts %}
 

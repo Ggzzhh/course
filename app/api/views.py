@@ -166,4 +166,29 @@ def delete_choice(c_id, u_id):
         return jsonify({'resCode': 'err', 'msg': '课程移除失败！'})
 
 
+@api.route('/admin/password', methods=['UPDATE'])
+@admin_required
+def update_admin_pwd():
+    data = request.get_json()
+    pwd = None
+    if data:
+        pwd = data.get('password')
+    else:
+        return jsonify({
+            'resCode': 'err',
+            'msg': '数据传输错误！'
+        })
+    if pwd and pwd != '':
+        current_user.password = pwd
+        db.session.add(current_user)
+    else:
+        return jsonify({
+            'resCode': 'err',
+            'msg': '新密码不能为空！'
+        })
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '密码更改成功！下次登录请使用新密码！'
+    })
+
 

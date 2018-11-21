@@ -286,10 +286,14 @@ class Course(db.Model):
             'url': url_for('main.course_video', course_id=self.id),
             'classify': self.classify.name if self.classify else None,
             'type': self.get_type(),
+            'video_num': self.video_nums(),
             'duration': self.duration,
             'newstime': self.newstime,
             'img_url': self.img_url,
-            'validate': self.validate
+            'validate': self.validate,
+            'choice_num': self.choice_nums(),
+            'pass_num': self.choice_pass_nums(),
+            'status': '已发布' if self.status else '未发布'
         }
         return data
 
@@ -371,6 +375,30 @@ class Course(db.Model):
         self.duration = duration // 60
         db.session.add(self)
         # db.session.commit()
+
+    def choice_nums(self):
+        try:
+            num = len(self.choices.all())
+            return num
+        except:
+            print(self)
+            return 0
+
+    def choice_pass_nums(self):
+        try:
+            num = len(self.choices.filter(Choice.is_pass == 1).all())
+            return num
+        except:
+            print(self)
+            return 0
+
+    def video_nums(self):
+        try:
+            num = len(self.videos.all())
+            return num
+        except:
+            print(self)
+            return 0
 
     def __repr__(self):
         return '<课程 %r>' % self.name
