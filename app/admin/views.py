@@ -109,8 +109,32 @@ def course_list():
             'link': url_for('admin.course_list')
         }
     ]
-    courses = [course.to_json() for course in Course.query.all()][:9]
-    return render_template('admin/course_list.html', route=route, courses=courses)
+    page = request.args.get('page', default=1, type=int)
+    course_name = request.args.get('courseName', default=None)
+    course_status = request.args.get('courseStatus', default=None, type=int)
+
+    query = Course.query
+
+    if course_name is not None:
+        query = query.filter(Course.name.like('%{}%'.format(course_name)))
+    if course_status is not None and course_status != 2:
+        query = query.filter(Course.status == course_status)
+    pagination = query.order_by(Course.newstime.desc())\
+        .paginate(page, per_page=8, error_out=False)
+    next = pagination.next_num
+    prev = pagination.prev_num
+    total = pagination.pages
+    courses = [course.to_json() for course in pagination.items]
+    return render_template('admin/course_list.html',
+                           route=route,
+                           courses=courses,
+                           next=next,
+                           prev=prev,
+                           page=page,
+                           total=total,
+                           course_name=course_name,
+                           course_status=course_status
+                           )
 
 
 @admin.route('/user-manage/add')

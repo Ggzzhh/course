@@ -192,3 +192,12 @@ def update_admin_pwd():
     })
 
 
+@api.route('/admin/course/<int:_id>', methods=['DELETE'])
+@admin_required
+def admin_course(_id):
+    course = Course.query.get_or_404(_id)
+    db.session.delete(course)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '删除完毕！所有该课程相关资料将会一同删除！'
+    })

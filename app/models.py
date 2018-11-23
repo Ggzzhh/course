@@ -276,7 +276,8 @@ class Course(db.Model):
     choices = db.relationship('Choice',
                               foreign_keys=[Choice.course_id],
                               backref=db.backref('course', lazy='joined'),
-                              lazy='dynamic'
+                              lazy='dynamic',
+                              cascade='all, delete-orphan'
                               )
 
     def to_json(self):
@@ -286,14 +287,15 @@ class Course(db.Model):
             'url': url_for('main.course_video', course_id=self.id),
             'classify': self.classify.name if self.classify else None,
             'type': self.get_type(),
-            'video_num': self.video_nums(),
             'duration': self.duration,
             'newstime': self.newstime,
             'img_url': self.img_url,
             'validate': self.validate,
+            'status': '已发布' if self.status else '未发布',
+            # 下面几行查询比较复杂，会增加页面延迟
+            'video_num': self.video_nums(),
             'choice_num': self.choice_nums(),
-            'pass_num': self.choice_pass_nums(),
-            'status': '已发布' if self.status else '未发布'
+            'pass_num': self.choice_pass_nums()
         }
         return data
 

@@ -65,9 +65,17 @@
       background-color: #ebebeb;
     }
 
+    .list-table>table>thead>tr, .green, .red {
+      font-weight: 600;
+    }
+
     .list-table>table>tbody>tr>td, .list-table>table>thead>tr>td {
       padding-left: 10px;
-      line-height: 2rem;
+      line-height: 2.2rem;
+    }
+
+    .pager li {
+      margin-left: 2rem;
     }
   </style>
 {% endblock %}
@@ -76,25 +84,28 @@
   <div class="list-container">
     <div class="list-body">
       <div class="list-search">
-        <div class="list-head">
-          <div>查找条件</div>
-          <div>
-            <button type="button" id="courseSearch" class="btn btn-success btn-sm">搜索</button>
+        <form action="{{ url_for('admin.course_list') }}">
+          <div class="list-head">
+            <div>查找条件</div>
+            <div>
+              <button type="submit" id="courseSearch" class="btn btn-success btn-sm">搜索</button>
+            </div>
           </div>
-        </div>
-        <div class="search-content">
-          <div class="form-horizontal">
-            <div class="form-title">课程名称 * </div>
-            <input type="text" class="form-control" name="courseName" placeholder="请输入">
+          <div class="search-content">
+            <div class="form-horizontal">
+              <div class="form-title">课程名称 * </div>
+              <input type="text" class="form-control" name="courseName" placeholder="请输入">
+            </div>
+            <div class="form-horizontal">
+              <div class="form-title">发布状态 * </div>
+              <select class="form-control" name="courseStatus">
+                <option value="2">不限</option>
+                <option value="1">已发布</option>
+                <option value="0">未发布</option>
+              </select>
+            </div>
           </div>
-          <div class="form-horizontal">
-            <div class="form-title">发布状态 * </div>
-            <select class="form-control" name="courseStatus">
-              <option value="1">已发布</option>
-              <option value="0">未发布</option>
-            </select>
-          </div>
-        </div>
+        </form>
       </div>
       <div class="list-content">
         <div class="list-head">
@@ -125,10 +136,16 @@
                 <td>{{ course.video_num }}</td>
                 <td>{{ course.choice_num }}</td>
                 <td>{{ course.pass_num }}</td>
-                <td>{{ course.status }}</td>
+                <td
+                    {% if course.status == '已发布' %}
+                      class="green"
+                    {% else %}
+                      class="red"
+                    {% endif %}
+                >{{ course.status }}</td>
                 <td>
                   <a href="#">修改</a>
-                  <a href="#">删除</a>
+                  <a href="#" onclick="deleteCourse('{{ course.id }}')">删除</a>
                 </td>
               </tr>
             {% endfor %}
@@ -138,8 +155,19 @@
         <div class="list-pagination">
           <nav aria-label="...">
             <ul class="pager">
-              <li><a href="">上一页</a></li>
-              <li><a href="">下一页</a></li>
+              {% if prev %}
+                <li><a href="{{ url_for('admin.course_list',
+              page=prev, courseName=course_name, courseStatus=course_status) }}">上一页</a></li>
+              {% else %}
+                <li class="disabled"><a href="#">上一页</a></li>
+              {% endif %}
+              <li>共 {{ total }} 页 当前第 {{ page }} 页</li>
+              {% if next %}
+                <li><a href="{{ url_for('admin.course_list',
+              page=next, courseName=course_name, courseStatus=course_status) }}">下一页</a></li>
+              {% else %}
+                <li class="disabled"><a href="#">下一页</a></li>
+              {% endif %}
             </ul>
           </nav>
         </div>
@@ -148,5 +176,15 @@
   </div>
 {% endblock %}
 {% block _scripts %}
-
+  <script>
+    function deleteCourse(id) {
+        event.preventDefault();
+        a_json(
+            '/api/admin/course/'+id,
+            'DELETE',
+            '',
+            ()=>document.location.reload()
+        )
+    }
+  </script>
 {% endblock %}
