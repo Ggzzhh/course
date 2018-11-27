@@ -300,17 +300,24 @@ class Course(db.Model):
         return data
 
     @staticmethod
-    def from_json(data):
+    def from_json(data, course=None):
         name = data.get('name')
         _type = data.get('type')
         classify_id = data.get('classify')
         validate = data.get('validate')
         img_url = data.get('img_url')
+        try:
+            status = int(data.get('status'))
+        except:
+            status = None
 
-        course = Course(name=name)
+        if course is None:
+            course = Course(name=name)
+            if classify_id:
+                course.classify_id = classify_id
+        else:
+            course.name = name
 
-        if classify_id:
-            course.classify_id = classify_id
         if validate:
             try:
                 validate = int(validate)
@@ -320,15 +327,25 @@ class Course(db.Model):
         if img_url:
             course.img_url = img_url
 
+        if status is not None:
+            course.status = True if status == 1 else False
+
         if _type == 'public':
             course.is_public = True
             course.need_exam = False
             course.need_learn = False
         if _type == 'exam':
+            course.is_public = False
             course.need_exam = True
             course.need_learn = False
         if _type == 'all':
+            course.is_public = False
             course.need_exam = True
+            course.need_learn = True
+        if _type == 'learn':
+            course.is_public = False
+            course.need_exam = False
+            course.need_learn = True
 
         return course
 
@@ -402,6 +419,12 @@ class Course(db.Model):
             print(self)
             return 0
 
+    def get_edit_video_src(self):
+        return url_for('admin.edit_video', c_id=self.id)
+
+    def get_edit_exam_src(self):
+        return url_for('admin.edit_exam', c_id=self.id)
+
     def __repr__(self):
         return '<课程 %r>' % self.name
 
@@ -418,7 +441,8 @@ class Video(db.Model):
     u_videos = db.relationship('UserVideo',
                                foreign_keys=[UserVideo.video_id],
                                backref=db.backref('video', lazy='joined'),
-                               lazy='dynamic'
+                               lazy='dynamic',
+                               cascade='all, delete-orphan'
                                )
 
     def to_json(self):

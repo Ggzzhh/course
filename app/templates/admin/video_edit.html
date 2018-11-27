@@ -1,0 +1,211 @@
+{% extends 'admin/frm_base.html' %}
+{% import '_models.html' as model %}
+{% block _head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+  <style>
+    .nav > .active {
+      cursor: pointer;
+    }
+
+    .list-body {
+      width: 98%;
+      height: 100%;
+    }
+
+    .td-pro {
+      max-width: 10rem;
+    }
+
+    .td-pro > .my-progress > .text {
+      width: 0;
+    }
+
+    .list-head {
+      margin-top: 1rem;
+    }
+
+    .btn-block {
+      display: block;
+      width: 100%;
+    }
+
+    .dm-uploader .btn input[type=file] {
+      width: 100%;
+      height: 100%;
+    }
+
+    .list-table {
+      height: 80%;
+      align-items: flex-start;
+      padding: 0;
+    }
+
+    .list-table tbody, .list-table thead {
+      display: block;
+      overflow-y: auto;
+      width: 100%;
+      height: 100%;
+    }
+
+    .list-table tbody {
+      height: 24rem;
+    }
+
+    .list-table tbody>tr, .list-table thead>tr{
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .list-table tbody>tr>td, .list-table thead>tr>td {
+      min-width: 8rem;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+{% endblock %}
+{% block content_body %}
+  <div class="list-container">
+    <div class="list-body">
+      <div class="course-edit-nav">
+        <ul class="nav nav-tabs">
+          <li role="presentation"><a href="{{ url_for('admin.course_manage', c_id=course.id) }}">基础信息</a></li>
+          {% if course.need_learn or course.is_public %}
+            <li role="presentation" class="active"><a>课件视频</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="list-head">
+        <div>视频列表</div>
+        <div class="dm-uploader">
+          <div type="button" id="newVideo"  class="btn btn-primary btn-sm btn-block" >
+              <span>
+                <span class="glyphicon glyphicon-plus"></span> 新 增
+              </span>
+            <input type="file" multiple title="点击上传" />
+          </div>
+        </div>
+      </div>
+      <div class="list-table">
+        <table>
+          <thead>
+          <tr>
+            <td>ID</td>
+            <td style="min-width: 12rem">标题(文件名)</td>
+            <td>时长(秒)</td>
+            <td>上传进度</td>
+            <td>操作</td>
+          </tr>
+          </thead>
+          <tbody>
+          {% for video in videos %}
+            <tr>
+              <td>{{ video.id }}</td>
+              <td style="min-width: 12rem">{{ video.title }}</td>
+              <td>{{ video.duration }} s</td>
+              <td>
+                <div class="td-pro">
+                  {{ model.progress('', '100', 'progress-bar progress-bar-success') }}
+                </div>
+              </td>
+              <td>
+                <a href="#">编辑</a>
+                <a href="#">删除</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block _scripts %}
+  <script src="{{ url_for('static', filename='js/juicer-min.js') }}"></script>
+  <script>
+      $(function () {
+          function newTr(data){
+              let tpl = document.getElementById('tr-tpl').innerHTML;
+              let html = juicer(tpl, data);
+              $('.list-table>table>tbody>tr:first-child').before(html);
+          }
+
+          function updateProgress(id, percent, cls) {
+              let target = $('#'+id).find('td:nth-child(4)').find('.progress>div');
+              target.removeClass();
+              target.addClass(cls);
+              target.attr('aria-valuenow', percent);
+              target.html(percent + '%');
+              target.css('width', percent+'%');
+          }
+
+
+
+          $('#newVideo').dmUploader({
+              url: '{{ url_for("api.upload_video") }}',
+              auto: true,
+              queue: true,
+              dnd: false,
+              allowedTypes: 'video/*',
+              onNewFile: function (id, file) {
+                  let name = file.name;
+                  let title = name.toString(),
+                      reg = /(.*)\.(.*)/i;
+                  title = title.match(reg)[1];
+                  let data = {
+                      title: title,
+                      id: id,
+                      percent: 0,
+                      _class: "progress-bar progress-bar-danger progress-bar-striped"
+                  };
+                  newTr(data);
+              },
+              onBeforeUpload: function (id) {
+                  console.log('before' + id);
+              },
+              onUploadProgress: function (id, percent) {
+                  updateProgress(id, percent, 'progress-bar progress-bar-danger progress-bar-striped')
+              },
+              onUploadSuccess: function(id, data){
+                  updateProgress(id, 100, 'progress-bar progress-bar-success')
+                  let target = $('#'+id);
+                  target.find('td:nth-child(5)').html('<a href="#">编辑</a> <a href="#">删除</a>');
+                  target.find('td:nth-child(3)').html('321 s');
+                  target.find('td:nth-child(1)').html('123');
+              },
+              onUploadError: function(id, xhr, status, message) {
+                  parent.swal(message, '', 'error');
+                  $(this).dmUploader('destroy');
+              },
+              onFallbackMode: function () {
+                  parent.swal('浏览器不支持上传插件！请更换浏览器!', '', 'info');
+              }
+          });
+      });
+  </script>
+  <script id="tr-tpl" type="text/template">
+    <tr id="${ id }">
+      <td>暂 无</td>
+      <td style="min-width: 12rem">${title}</td>
+      <td>未 知</td>
+      <td>
+        <div class="td-pro" >
+          <div class="my-progress">
+            <div class="learn-progress">
+              <div class="progress">
+                <div class="${ _class }" role="progressbar"
+                     aria-valuenow="${ percent }" aria-valuemin="0" aria-valuemax="100"
+                     style="width: 19%; min-width: 2.5rem; padding-left: 5px">
+                  ${percent}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td>
+        上传中
+      </td>
+    </tr>
+  </script>
+{% endblock %}

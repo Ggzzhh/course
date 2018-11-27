@@ -21,12 +21,12 @@
 {% endmacro %}
 
 
-{% macro progress(text, percent) %}
+{% macro progress(text, percent, class='progress-bar progress-bar-danger') %}
   <div class="my-progress">
     <div class="text">{{ text }}</div>
     <div class="learn-progress">
       <div class="progress">
-        <div class="progress-bar progress-bar-danger" role="progressbar"
+        <div class="{{ class }}" role="progressbar"
              aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100"
              style="width: {{ percent }}%; min-width: 2.5rem; padding-left: 5px">
           {{ percent }}%

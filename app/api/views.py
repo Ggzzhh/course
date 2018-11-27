@@ -201,3 +201,13 @@ def admin_course(_id):
         'resCode': 'ok',
         'msg': '删除完毕！所有该课程相关资料将会一同删除！'
     })
+
+
+@api.route('/upload/video', methods=["POST"])
+@admin_required
+def upload_video():
+    print(request.files)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': 'ok'
+    })

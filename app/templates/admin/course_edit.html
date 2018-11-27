@@ -1,0 +1,166 @@
+{% extends 'admin/frm_base.html' %}
+{% set c_type = course.get_type() %}
+{% block _head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+  <style>
+    .nav > .active {
+      cursor: pointer;
+    }
+
+    .list-body {
+      width: 98%;
+      height: 100%;
+    }
+  </style>
+{% endblock %}
+{% block content_body %}
+  <div class="list-container">
+    <div class="list-body">
+      <div class="course-edit-nav">
+        <ul class="nav nav-tabs">
+          <li role="presentation" class="active"><a>基础信息</a></li>
+          {% if course.need_learn or course.is_public %}
+            <li role="presentation"><a href="{{ course.get_edit_video_src() }}">课件视频</a></li>
+          {% endif %}
+          {% if course.need_exam %}
+            <li role="presentation"><a href="#">试卷</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="frm-container">
+        <form class="form frm-content" id="courseFrm" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-group">
+            <div>课程状态</div>
+            <label class="radio-inline">
+              <input type="radio" name="status" value="0"
+                  {% if course.status == False %}
+                     checked
+                  {% endif %}
+              > 未发布
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="status" value="1"
+                  {% if course.status == True %}
+                     checked
+                  {% endif %}
+              > 已发布
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="">课程名称</label>
+            <input type="text" name="name" class="form-control" required value="{{ course.name }}">
+          </div>
+          <div class="form-group">
+            <div>课程类型</div>
+
+            <label class="radio-inline">
+              <input type="radio" name="type" value="public"
+                  {% if c_type == '公共' %}
+                     checked
+                  {% endif %}
+              >公共
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="type" value="learn"
+                  {% if c_type == '学习' %}
+                     checked
+                  {% endif %}
+              > 学习
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="type" value="exam"
+                  {% if c_type == '考试' %}
+                     checked
+                  {% endif %}
+              > 考试
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="type" value="all"
+                  {% if c_type == '培训' %}
+                     checked
+                  {% endif %}
+              > 培训
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label>课程分类</label>
+            <select class="form-control" name="classify">
+              {% for classify in classifies %}
+                <option value="{{ classify[0] }}"
+                    {% if course.classify_id == classify[0] %}
+                        selected
+                    {% endif %}
+                >
+                  {{ classify[1] }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="">验证间隔(单位：秒)</label>
+            <input type="number" name="validate" class="form-control" value="{{ course.validate }}" >
+            <div class="explain">
+              默认0秒，即不会进行真人弹窗验证，如果该值x大于0，则视频每间隔x秒会弹出一个十以内的加法，回答正确方可继续学习。
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="control-label" for="img">课程背景图</label>
+            <div class="img-rounded">
+              <img src="{{ course.img_url }}" alt=""
+                   class="img-thumbnail" id="uploadPreview">
+            </div>
+            <input id="uploadImage" type="file" name="img" accept="image/*"/>
+            <p class="help">图片大小不要超过2M, 且保存时会保存为jpeg格式</p>
+          </div>
+          <div class="submit">
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block _scripts %}
+  {{ super() }}
+  <script>
+      $('#courseFrm').submit(function () {
+          if ($('input[name="status"]:checked').val() == '0') {
+              return true
+          }
+          else {
+              let cStatus = "{{ course.video_nums() }}";
+              let cType = $('input[name="type"]:checked').val();
+              if (cStatus == null ){
+                  parent.swal('保存失败', '出现错误！', 'error');
+                  return false
+              }
+              else {
+                  if (cType === "public" || cType === "learn" || cType === "all") {
+                      if (cStatus == 0) {
+                          parent.swal('保存失败', '视频课件数量为0，请添加视频后再发布！', 'error');
+                          return false;
+                      }
+                      else
+                          return true;
+                  }
+
+                  if (cType === "all" || cType === "exam"){
+                      if ('题库为空') {
+                          parent.swal('保存失败', '视频数量！', 'error');
+                          return false;
+                      }
+                      else
+                          return true;
+                  }
+
+
+
+              }
+          }
+
+      });
+  </script>
+{% endblock %}

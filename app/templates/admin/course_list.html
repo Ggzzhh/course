@@ -1,83 +1,6 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-  <style>
-    .list-container {
-      margin-top: 0.5rem;
-      width: 100%;
-      height: 100%;
-    }
-
-    .list-body {
-      margin: 0 1rem;
-    }
-
-    .list-head {
-      line-height: 1.8rem;
-      padding-left: 10px;
-      padding-right: 10px;
-      height: 40px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #cfcfcf;
-      color: #64646d;
-      font-weight: 500;
-    }
-    .search-content {
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .form-horizontal {
-      display: flex;
-      width: 40%;
-    }
-
-    .form-title {
-      min-width: 6rem;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
-
-    .list-content {
-      margin-top: 30px;
-    }
-
-    .list-table {
-      width: 100%;
-      padding-top: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .list-table>table {
-      width: 100%;
-    }
-
-    .list-table>table>tbody>tr:nth-child(odd) {
-      background-color: #ebebeb;
-    }
-
-    .list-table>table>thead>tr, .green, .red {
-      font-weight: 600;
-    }
-
-    .list-table>table>tbody>tr>td, .list-table>table>thead>tr>td {
-      padding-left: 10px;
-      line-height: 2.2rem;
-    }
-
-    .pager li {
-      margin-left: 2rem;
-    }
-  </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
 {% endblock %}
 {% block content_body %}
   {#           #}
@@ -144,7 +67,7 @@
                     {% endif %}
                 >{{ course.status }}</td>
                 <td>
-                  <a href="#">修改</a>
+                  <a href="{{ url_for('admin.course_manage', c_id=course.id) }}">编辑</a>
                   <a href="#" onclick="deleteCourse('{{ course.id }}')">删除</a>
                 </td>
               </tr>
@@ -177,14 +100,34 @@
 {% endblock %}
 {% block _scripts %}
   <script>
-    function deleteCourse(id) {
-        event.preventDefault();
-        a_json(
-            '/api/admin/course/'+id,
-            'DELETE',
-            '',
-            ()=>document.location.reload()
-        )
-    }
+      function deleteCourse(id) {
+          event.preventDefault();
+          parent.swal({
+              title: '确定删除吗？',
+              text: '你将无法恢复它！',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: '确定删除！',
+          }).then(function(){
+              a_json(
+                  '/api/admin/course/'+id,
+                  'DELETE',
+                  '',
+                  ()=>{
+                      parent.swal('删除', '课程已经被删除', 'success').then(
+                          ()=>document.location.reload()
+                      )
+                  }
+              )
+          });
+
+      }
+
+      $(document).ready(function () {
+        let msg = '{{ msg }}';
+        if (msg !== '') parent.swal('信息', msg, 'success')
+      })
   </script>
 {% endblock %}

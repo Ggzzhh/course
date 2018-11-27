@@ -9,7 +9,7 @@ from flask_login import login_manager, login_user, current_user, logout_user
 from . import admin
 from app import db
 from app.decorators import admin_required
-from app.models import User, Classify, Course
+from app.models import User, Classify, Course, Video
 from app.tools import save_to_static
 
 login_manager.login_view = 'admin.login'
@@ -73,7 +73,7 @@ def add_course():
         },
         {
             'type': 'link',
-            'text': '新增课程',
+            'text': '课程新增',
             'link': url_for('admin.add_course')
         }
     ]
@@ -109,6 +109,7 @@ def course_list():
             'link': url_for('admin.course_list')
         }
     ]
+    msg = request.args.get('msg', default='')
     page = request.args.get('page', default=1, type=int)
     course_name = request.args.get('courseName', default=None)
     course_status = request.args.get('courseStatus', default=None, type=int)
@@ -133,7 +134,8 @@ def course_list():
                            page=page,
                            total=total,
                            course_name=course_name,
-                           course_status=course_status
+                           course_status=course_status,
+                           msg=msg
                            )
 
 
@@ -163,4 +165,68 @@ def system_setting():
     return render_template('admin/setting.html', route=route)
 
 
+@admin.route('/course/<int:c_id>', methods=['POST', 'GET'])
+@admin_required
+def course_manage(c_id):
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        },
+        {
+            'type': 'link',
+            'text': '编辑课程',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '基础信息',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+    ]
+    course = Course.query.get_or_404(c_id)
+    classifies = Classify.all_to_list(True)
+    if request.method == 'POST':
+        form = request.form.to_dict()
+        img = request.files.get('img')
+        img_url = save_to_static(img, 'course{}.jpeg'.format(course.id))
+        if img_url:
+            course.img_url = img_url
+        course = Course.from_json(form, course)
+        db.session.add(course)
+        return redirect(url_for('admin.course_list', msg='保存成功'))
+    return render_template('admin/course_edit.html', course=course, route=route, classifies=classifies)
 
+
+@admin.route('/course/<int:c_id>/video')
+@admin_required
+def edit_video(c_id):
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        },
+        {
+            'type': 'link',
+            'text': '编辑课程',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '视频课件',
+            'link': url_for('admin.edit_video', c_id=c_id)
+        },
+    ]
+    course = Course.query.get_or_404(c_id)
+    videos = [video.to_json() for video in course.videos.order_by(Video.id.desc()).all()]
+    return render_template('admin/video_edit.html', route=route, course=course, videos=videos)

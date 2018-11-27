@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/ifram.css') }}" type="text/css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}" type="text/css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert2.min.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dm-uploader.min.css') }}" type="text/css">
   <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="shortcut icon" href="/static/image/favicon.ico" type="image/x-icon"/>
   <style>
@@ -93,6 +94,7 @@
   {{ moment.include_moment() }}
   <script src="{{ url_for('static', filename='js/sweetalert2.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/_ajax.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/jquery.dm-uploader.min.js') }}"></script>
   <script>
       var csrftoken = $('meta[name=csrf-token]').attr('content');
       $.ajaxSetup({
@@ -104,6 +106,61 @@
       });
   </script>
   {% block _scripts %}
+    <script>
+        function upLoadImage(img, Preview_id) {
+            var reader = new FileReader();
 
+            reader.readAsDataURL(img);
+
+            reader.onerror = function () {
+                console.log("读取异常....");
+            };
+
+            reader.onload = function () {
+                // 压缩 经测试 确实会变小
+                // 创建canvas元素
+                var canvas = document.createElement("canvas");
+                // 创建2d画布 getContext() 方法返回一个用于在画布上绘图的环境。
+                var ctx = canvas.getContext('2d');
+                var image = new Image();
+                image.src = this.result;
+                return image.onload = function () {
+                    // 注释内是等比例缩放
+                    var width = 240; // image.width;
+                    var height = 182; // image.height;
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    ctx.drawImage(image, 0, 0, width, height);
+                    var newImage = canvas.toDataURL("image/jpeg", 0.7);
+                    // console.log(newImage);
+                    $('#'+ Preview_id).attr("src", newImage);
+                };
+            };
+        }
+        $(document).ready(function () {
+            let img_file;
+            $('#uploadImage').change(function () {
+                img_file = this.files[0];
+                upLoadImage(img_file, 'uploadPreview');
+            });
+
+            $('input[name="type"]').change(function () {
+                let v = $('input[name="validate"]');
+                if ($(this).val() === 'exam') {
+                    v.val(0);
+                    v.attr('disabled', 'disabled');
+                }
+                else {
+                    {% if not course %}
+                        {% set course={'valdate':0} %}
+                    {% endif %}
+                    v.val('{{ course.validate|default(0) }}');
+                    $('input[name="validate"]').attr('disabled', false)
+                }
+            });
+
+        });
+    </script>
   {% endblock %}
 {% endblock %}
