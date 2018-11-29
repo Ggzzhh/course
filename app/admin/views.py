@@ -228,5 +228,6 @@ def edit_video(c_id):
         },
     ]
     course = Course.query.get_or_404(c_id)
-    videos = [video.to_json() for video in course.videos.order_by(Video.id.desc()).all()]
+    course.update_duration()
+    videos = [video.to_json() for video in course.videos.order_by(Video.order.desc(), Video.id).all()]
     return render_template('admin/video_edit.html', route=route, course=course, videos=videos)

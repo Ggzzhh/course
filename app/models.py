@@ -172,6 +172,10 @@ class UserVideo(db.Model):
             db.session.add(self)
             db.session.commit()
 
+    def update_duration(self):
+        self.duration = self.video.duration
+        db.session.add(self)
+
     @staticmethod
     def create(user, video):
         return UserVideo(user=user, video=video, duration=video.duration)
@@ -390,7 +394,8 @@ class Course(db.Model):
     def update_duration(self):
         duration = 0
         for video in self.videos:
-            duration += video.duration
+            if video.duration is not None:
+                duration += video.duration
         self.duration = duration // 60
         db.session.add(self)
         # db.session.commit()
@@ -436,6 +441,7 @@ class Video(db.Model):
     title = db.Column(db.String(256))
     # 总时长 按秒计算
     duration = db.Column(db.Integer)
+    order = db.Column(db.Integer, default=0)
     video_src = db.Column(db.String(512))
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
     u_videos = db.relationship('UserVideo',
@@ -449,10 +455,18 @@ class Video(db.Model):
         data = {
             'id': self.id,
             'title': self.title,
+            'order': self.order,
             'src': self.video_src,
-            'duration': self.duration
+            'duration': self.duration or '-',
+            'filename': self.get_filename()
         }
         return data
+
+    def get_filename(self):
+        if self.video_src:
+            filename = self.video_src.split('/')[-1]
+            return filename
+        return '空'
 
     def __repr__(self):
         return '<视频 %r>' % self.title

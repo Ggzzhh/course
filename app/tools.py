@@ -20,3 +20,10 @@ def save_to_static(file, filename):
             print(e)
     return
 
+
+def delete_file(file_path):
+    if file_path:
+        path = "app" + file_path
+        if os.path.exists(path):
+            os.remove(path)
+

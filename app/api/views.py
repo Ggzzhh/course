@@ -1,10 +1,11 @@
 
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, url_for
 from flask_login import current_user
 
 from . import api
 from app.models import db, User, Course, Choice, Video, UserVideo
 from app.decorators import admin_required, user_required
+from app.tools import delete_file
 
 
 @api.route('/')
@@ -142,7 +143,7 @@ def get_learn_card():
         query = query.filter(Choice.is_pass == 0)
     if _type == 'pass':
         query = query.filter(Choice.is_pass == 1)
-    pagination = query.order_by(Choice.last_seen.desc())\
+    pagination = query.order_by(Choice.last_seen.desc()) \
         .paginate(page, per_page=6, error_out=False)
     choices = [course.to_json() for course in pagination.items]
     data = {
@@ -203,11 +204,95 @@ def admin_course(_id):
     })
 
 
-@api.route('/upload/video', methods=["POST"])
+@api.route('/upload/video', methods=["POST", "UPDATE"])
 @admin_required
 def upload_video():
-    print(request.files)
+    if request.method == "UPDATE":
+        duration = request.values.get('duration')
+        v_id = request.values.get('v_id')
+        video = Video.query.get(v_id)
+        if video:
+            video.duration = duration
+            db.session.add(video)
+            db.session.commit()
+            for uv in video.u_videos:
+                uv.update_duration()
+            return jsonify({
+                'resCode': 'ok',
+                'msg': '时长更新完毕！'
+            })
+    file = request.files.get('file')
+    c_id = request.values.get('c_id')
+    course = Course.query.get_or_404(c_id)
+    filename = file.filename
+    title = filename.split('.')[0] if isinstance(filename, str) else 'None'
+    video = Video(title=title)
+    video.course = course
+    db.session.add(video)
+    db.session.commit()
+    v_id = video.id
+    base_path = 'app/static/videos/'
+    base_name = 'course{}-{}'.format(c_id, v_id)
+    _filename = '{}.{}'.format(base_name, filename.split('.')[1])
+    path = '/static/videos/' + _filename
+    try:
+        file.save(base_path + _filename)
+        video.video_src = path
+        db.session.add(video)
+
+        choices = course.choices.all()
+        users = [choice.user for choice in choices]
+        for user in users:
+            uv = UserVideo.create(user, video)
+
+    except Exception as e:
+        print(e)
+        db.session.delete(video)
+
+    return jsonify({
+        'id': v_id,
+        'duration': video.duration or '-',
+        'order': video.order,
+        'resCode': 'ok',
+        'msg': 'ok',
+        'filename': video.get_filename()
+    })
+
+
+@api.route('/video', methods=['UPDATE'])
+@admin_required
+def update_video():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    v_id = json.get('id')
+    title = json.get('title')
+    order = json.get('order')
+    video = Video.query.get_or_404(v_id)
+    try:
+        order = int(order)
+        video.order = order
+    except:
+        pass
+    video.title = title
+    db.session.add(video)
     return jsonify({
         'resCode': 'ok',
-        'msg': 'ok'
+        'msg': '修改成功!'
+    })
+
+
+@api.route('/video', methods=['DELETE'])
+@admin_required
+def delete_video():
+    v_id = request.args.get('v_id')
+    video = Video.query.get_or_404(v_id)
+    db.session.delete(video)
+    delete_file(video.video_src)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '视频已删除!'
     })

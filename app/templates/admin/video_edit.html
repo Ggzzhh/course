@@ -13,6 +13,10 @@
     }
 
     .td-pro {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
       max-width: 10rem;
     }
 
@@ -58,9 +62,14 @@
     }
 
     .list-table tbody>tr>td, .list-table thead>tr>td {
-      min-width: 8rem;
+      min-width: 9rem;
+      line-height: 1.2rem;
+      max-width: 12rem;
       padding: 10px;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
 {% endblock %}
@@ -90,7 +99,8 @@
         <table>
           <thead>
           <tr>
-            <td>ID</td>
+            <td>排序优先级</td>
+            <td>文件名</td>
             <td style="min-width: 12rem">标题(文件名)</td>
             <td>时长(秒)</td>
             <td>上传进度</td>
@@ -100,7 +110,8 @@
           <tbody>
           {% for video in videos %}
             <tr>
-              <td>{{ video.id }}</td>
+              <td>{{ video.order }}</td>
+              <td>{{ video.filename }}</td>
               <td style="min-width: 12rem">{{ video.title }}</td>
               <td>{{ video.duration }} s</td>
               <td>
@@ -109,8 +120,8 @@
                 </div>
               </td>
               <td>
-                <a href="#">编辑</a>
-                <a href="#">删除</a>
+                <a href="#" onclick="editVideo(this, '{{ video.id }}')">编辑</a>
+                <a href="#" onclick="deleteVideo('{{ video.id }}')">删除</a>
               </td>
             </tr>
           {% endfor %}
@@ -119,33 +130,117 @@
       </div>
     </div>
   </div>
+  <video style="display:none;" controls="controls" id="getDuration" oncanplaythrough="setDuration(this)">
+  </video>
 {% endblock %}
 {% block _scripts %}
   <script src="{{ url_for('static', filename='js/juicer-min.js') }}"></script>
   <script>
+      let duration = 0;
+
+      function setDuration(ele) {
+          duration = Math.floor(ele.duration);
+      }
+
+      function editVideo(ele, v_id) {
+          event.preventDefault();
+          let tr = ele.parentNode.parentNode;
+          let title = tr.children[2].innerHTML,
+              order = tr.children[0].innerHTML;
+          parent.swal({
+              title: '编辑课件',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: '保存',
+              cancelButtonText: '取消',
+              html:
+                  '<b>标题</b><input id="swal-input1" class="swal2-input" value='+ title +'>' +
+                  '<b>排序优先级</b><input id="swal-input2" class="swal2-input" value=' + order + '>' +
+                  '<div style="width:100%; color:red; text-align: left; font-size: 0.875rem; font-weight: 500">' +
+                  '* 排序顺序按照从大到小排序，建议每个十位数设置一个序列，方便调整！<br/>* 如:第一节课设置为100， 第二节课设置为90...</div>',
+              preConfirm: function () {
+                  return new Promise(function (resolve) {
+                      resolve([
+                          parent.$('#swal-input1').val(),
+                          parent.$('#swal-input2').val(),
+                          v_id
+                      ])
+                  })
+              },
+              onOpen: function () {
+                  parent.$('#swal-input1').focus()
+              }
+          }).then(function (result) {
+              let title = result[0],
+                  order = result[1],
+                  id = result[2];
+              let data = JSON.stringify({
+                  title: title,
+                  order: order,
+                  id: id
+              });
+              a_json(
+                  "{{ url_for('api.update_video') }}",
+                  "UPDATE",
+                  data,
+                  function (data) {
+                      swal(data.msg, '', 'success').then(()=>document.location.reload())
+                  }
+              )
+          }).catch(swal.noop)
+      }
+
+      function deleteVideo(id) {
+          event.preventDefault();
+          parent.swal({
+              title: '确定删除吗？',
+              text: '你将无法恢复它！',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: '确定删除！',
+              cancelButtonText: '取消删除！',
+          }).then(function () {
+              a_json(
+                  "{{ url_for('api.delete_video') }}?v_id=" + id,
+                  "DELETE",
+                  "",
+                  function (data) {
+                      parent.swal(data.msg, '', 'success').then(()=>document.location.reload())
+                  }
+              )
+          });
+
+      }
+
+      function newTr(data){
+          let tpl = document.getElementById('tr-tpl').innerHTML;
+          let html = juicer(tpl, data);
+          $('.list-table>table>tbody').prepend(html);
+      }
+
+      function updateProgress(id, percent, cls) {
+          let target = $('#'+id).find('td:nth-child(5)').find('.progress>div');
+          target.removeClass();
+          target.addClass(cls);
+          target.attr('aria-valuenow', percent);
+          target.html(percent + '%');
+          target.css('width', percent+'%');
+      }
+
       $(function () {
-          function newTr(data){
-              let tpl = document.getElementById('tr-tpl').innerHTML;
-              let html = juicer(tpl, data);
-              $('.list-table>table>tbody>tr:first-child').before(html);
-          }
-
-          function updateProgress(id, percent, cls) {
-              let target = $('#'+id).find('td:nth-child(4)').find('.progress>div');
-              target.removeClass();
-              target.addClass(cls);
-              target.attr('aria-valuenow', percent);
-              target.html(percent + '%');
-              target.css('width', percent+'%');
-          }
-
-
-
           $('#newVideo').dmUploader({
               url: '{{ url_for("api.upload_video") }}',
               auto: true,
-              queue: true,
+              queue: false,
               dnd: false,
+              extraData: function(){
+                  return {
+                      'c_id': '{{ course.id }}',
+                      'duration': duration
+                  }
+              },
               allowedTypes: 'video/*',
               onNewFile: function (id, file) {
                   let name = file.name;
@@ -158,20 +253,40 @@
                       percent: 0,
                       _class: "progress-bar progress-bar-danger progress-bar-striped"
                   };
+                  let vUrl = URL.createObjectURL(file);
+                  document.getElementById('getDuration').src = vUrl;
                   newTr(data);
+
               },
               onBeforeUpload: function (id) {
-                  console.log('before' + id);
+                  // 上传前触发
+                  // console.log('before' + id);
               },
               onUploadProgress: function (id, percent) {
                   updateProgress(id, percent, 'progress-bar progress-bar-danger progress-bar-striped')
               },
               onUploadSuccess: function(id, data){
-                  updateProgress(id, 100, 'progress-bar progress-bar-success')
-                  let target = $('#'+id);
-                  target.find('td:nth-child(5)').html('<a href="#">编辑</a> <a href="#">删除</a>');
-                  target.find('td:nth-child(3)').html('321 s');
-                  target.find('td:nth-child(1)').html('123');
+                  if (data.resCode === 'ok'){
+                      updateProgress(id, 100, 'progress-bar progress-bar-success');
+                      let target = $('#'+id);
+                      target.find('td:nth-child(6)').html(
+                          '<a href="#" onclick="editVideo(this, ' + data.id + ')">编辑</a> ' +
+                          '<a href="#" onclick="deleteVideo(' + data.id + ')">删除</a>');
+                      target.find('td:nth-child(4)').html(duration + ' s');
+                      target.find('td:nth-child(1)').html(data.order);
+                      target.find('td:nth-child(2)').html(data.filename);
+                      a_json(
+                          "{{ url_for('api.upload_video') }}?duration="+ duration + "&v_id=" + data.id,
+                          "UPDATE",
+                          "",
+                          function (data) {
+                              console.log(data.resCode)
+                          }
+                      )
+                  }
+                  else {
+                      parent.swal('出现错误！请重试!', data.msg, 'error')
+                  }
               },
               onUploadError: function(id, xhr, status, message) {
                   parent.swal(message, '', 'error');
@@ -185,7 +300,8 @@
   </script>
   <script id="tr-tpl" type="text/template">
     <tr id="${ id }">
-      <td>暂 无</td>
+      <td>0</td>
+      <td>未 知</td>
       <td style="min-width: 12rem">${title}</td>
       <td>未 知</td>
       <td>

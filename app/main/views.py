@@ -134,7 +134,7 @@ def exam(exam_id):
 def course_video(course_id):
     course = Course.query.get_or_404(course_id)
     c_type = course.get_type()
-    videos = [video.to_json() for video in course.videos]
+    videos = [video.to_json() for video in course.videos.order_by(Video.order.desc(), Video.id).all()]
     course = course.to_json()
     if c_type in ['培训', '学习']:
         if current_user.is_user:
