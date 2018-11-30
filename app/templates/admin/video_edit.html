@@ -82,6 +82,9 @@
           {% if course.need_learn or course.is_public %}
             <li role="presentation" class="active"><a>课件视频</a></li>
           {% endif %}
+          {% if course.need_exam %}
+            <li role="presentation"><a href="#">题库及试卷</a></li>
+          {% endif %}
         </ul>
       </div>
       <div class="list-head">
@@ -121,6 +124,7 @@
               </td>
               <td>
                 <a href="#" onclick="editVideo(this, '{{ video.id }}')">编辑</a>
+                &nbsp;
                 <a href="#" onclick="deleteVideo('{{ video.id }}')">删除</a>
               </td>
             </tr>
@@ -270,7 +274,7 @@
                       updateProgress(id, 100, 'progress-bar progress-bar-success');
                       let target = $('#'+id);
                       target.find('td:nth-child(6)').html(
-                          '<a href="#" onclick="editVideo(this, ' + data.id + ')">编辑</a> ' +
+                          '<a href="#" onclick="editVideo(this, ' + data.id + ')">编辑</a> &nbsp;' +
                           '<a href="#" onclick="deleteVideo(' + data.id + ')">删除</a>');
                       target.find('td:nth-child(4)').html(duration + ' s');
                       target.find('td:nth-child(1)').html(data.order);

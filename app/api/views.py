@@ -296,3 +296,21 @@ def delete_video():
         'resCode': 'ok',
         'msg': '视频已删除!'
     })
+
+
+@api.route('/exam', methods=['UPDATE'])
+@admin_required
+def update_exam():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    course = Course.query.get_or_404(json.get('c_id'))
+    course = course.update_exam(json)
+    db.session.add(course)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '保存成功!'
+    })

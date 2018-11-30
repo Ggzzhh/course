@@ -283,6 +283,30 @@ class Course(db.Model):
                               lazy='dynamic',
                               cascade='all, delete-orphan'
                               )
+    # 考试相关
+    total_score = db.Column(db.Integer, default=100)
+    pass_score = db.Column(db.Integer, default=60)
+
+    radio_num = db.Column(db.Integer, default=0)
+    radio_score = db.Column(db.Integer, default=0)
+    radios = db.relationship('RadioBank',
+                             backref='course',
+                             lazy='dynamic',
+                             cascade='all, delete-orphan')
+
+    multiple_num = db.Column(db.Integer, default=0)
+    multiple_score = db.Column(db.Integer, default=0)
+    multiples = db.relationship('MultipleBank',
+                                backref='course',
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
+
+    judge_num = db.Column(db.Integer, default=0)
+    judge_score = db.Column(db.Integer, default=0)
+    judges = db.relationship('JudgeBank',
+                             backref='course',
+                             lazy='dynamic',
+                             cascade='all, delete-orphan')
 
     def to_json(self):
         data = {
@@ -310,6 +334,7 @@ class Course(db.Model):
         classify_id = data.get('classify')
         validate = data.get('validate')
         img_url = data.get('img_url')
+
         try:
             status = int(data.get('status'))
         except:
@@ -352,6 +377,19 @@ class Course(db.Model):
             course.need_learn = True
 
         return course
+
+    def update_exam(self, data):
+        if data.get('exam'):
+            data = data.get('exam')
+            self.judge_num = data.get('judge_num')
+            self.judge_score = data.get('judge_score')
+            self.multiple_num = data.get('multiple_num')
+            self.multiple_score = data.get('multiple_score')
+            self.radio_num = data.get('radio_num')
+            self.radio_score = data.get('radio_score')
+            self.total_score = data.get('total_score')
+            self.pass_score = data.get('pass_score')
+            return self
 
     @staticmethod
     def filter_type(query, _type):
@@ -430,6 +468,33 @@ class Course(db.Model):
     def get_edit_exam_src(self):
         return url_for('admin.edit_exam', c_id=self.id)
 
+    @property
+    def radio_nums(self):
+        res = 0
+        try:
+            res = len(self.radio_num.all())
+        except:
+            pass
+        return res
+
+    @property
+    def multiple_nums(self):
+        res = 0
+        try:
+            res = len(self.multiple_num.all())
+        except:
+            pass
+        return res
+
+    @property
+    def judge_nums(self):
+        res = 0
+        try:
+            res = len(self.judge_num.all())
+        except:
+            pass
+        return res
+
     def __repr__(self):
         return '<课程 %r>' % self.name
 
@@ -490,4 +555,37 @@ class Classify(db.Model):
         return '<课程分类 %r>' % self.name
 
     __str__ = __repr__
+
+
+class RadioBank(db.Model):
+    __tablename__ = 'radio_bank'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
+    question = db.Column(db.String(256), nullable=False)
+    answer = db.Column(db.String(256), nullable=False)
+    option1 = db.Column(db.String(256), nullable=False)
+    option2 = db.Column(db.String(256), nullable=False)
+    option3 = db.Column(db.String(256), nullable=False)
+    option4 = db.Column(db.String(256), nullable=False)
+
+
+class JudgeBank(db.Model):
+    __tablename__ = 'judge_bank'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
+    question = db.Column(db.String(256), nullable=False)
+    answer = db.Column(db.Boolean, nullable=False)
+
+
+class MultipleBank(db.Model):
+    __tablename__ = 'multiple_bank'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
+    question = db.Column(db.String(256), nullable=False)
+    # 答案使用字符串并用&&进行分割
+    answer = db.Column(db.String(256), nullable=False)
+    option1 = db.Column(db.String(256), nullable=False)
+    option2 = db.Column(db.String(256), nullable=False)
+    option3 = db.Column(db.String(256), nullable=False)
+    option4 = db.Column(db.String(256), nullable=False)
 

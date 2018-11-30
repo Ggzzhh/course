@@ -23,7 +23,7 @@
             <li role="presentation"><a href="{{ course.get_edit_video_src() }}">课件视频</a></li>
           {% endif %}
           {% if course.need_exam %}
-            <li role="presentation"><a href="#">试卷</a></li>
+            <li role="presentation"><a href="{{ course.get_edit_exam_src() }}">题库及试卷</a></li>
           {% endif %}
         </ul>
       </div>
@@ -53,35 +53,8 @@
           </div>
           <div class="form-group">
             <div>课程类型</div>
+            <input type="text" value="{{ c_type }}" disabled class="form-control" name="type">
 
-            <label class="radio-inline">
-              <input type="radio" name="type" value="public"
-                  {% if c_type == '公共' %}
-                     checked
-                  {% endif %}
-              >公共
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="type" value="learn"
-                  {% if c_type == '学习' %}
-                     checked
-                  {% endif %}
-              > 学习
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="type" value="exam"
-                  {% if c_type == '考试' %}
-                     checked
-                  {% endif %}
-              > 考试
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="type" value="all"
-                  {% if c_type == '培训' %}
-                     checked
-                  {% endif %}
-              > 培训
-            </label>
           </div>
 
           <div class="form-group">
@@ -131,14 +104,16 @@
               return true
           }
           else {
+
               let cStatus = "{{ course.video_nums() }}";
-              let cType = $('input[name="type"]:checked').val();
+              let cExams = "{{ course.radio_nums + course.multiple_nums + course.judge_nums }}";
+              let cType = $('input[name="type"]').val();
               if (cStatus == null ){
                   parent.swal('保存失败', '出现错误！', 'error');
                   return false
               }
               else {
-                  if (cType === "public" || cType === "learn" || cType === "all") {
+                  if (cType === "公共" || cType === "学习" || cType === "培训") {
                       if (cStatus == 0) {
                           parent.swal('保存失败', '视频课件数量为0，请添加视频后再发布！', 'error');
                           return false;
@@ -147,9 +122,10 @@
                           return true;
                   }
 
-                  if (cType === "all" || cType === "exam"){
-                      if ('题库为空') {
-                          parent.swal('保存失败', '视频数量！', 'error');
+                  if (cType === "培训" || cType === "考试"){
+
+                      if (cExams <= 0) {
+                          parent.swal('保存失败', '题库为空！', 'error');
                           return false;
                       }
                       else

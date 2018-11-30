@@ -1,0 +1,401 @@
+{% extends 'admin/frm_base.html' %}
+{% import '_models.html' as model %}
+{% block _head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+  <style>
+    .nav > .active {
+      cursor: pointer;
+    }
+
+    .list-body {
+      width: 98%;
+      height: 100%;
+    }
+
+    .list-table {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .list-table table{
+      width: 70%;
+    }
+
+    .list-table td {
+      min-width: 5rem;
+    }
+
+    .exam-input {
+      height: 1.5rem;
+      width: 60%;
+      min-width: 5rem;
+      border: none;
+      border-bottom: 1px solid rgb(51, 122, 183);
+      background-color: rgba(0,0,0,0);
+    }
+
+    .exam-input:focus {
+      outline: 0;
+    }
+
+    .list-head {
+      margin-top: 1rem;
+    }
+
+    .dm-uploader .btn input[type=file] {
+      width: 100%;
+      height: 100%;
+    }
+
+    .examInfo {
+      margin-top: 20px;
+      width: 70%;
+    }
+
+    .passInfo {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .bankCards {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      padding-top: 30px;
+    }
+
+    .bankCard {
+      width: 25%;
+      border: 3px solid rgb(51, 122, 183);
+      border-radius: 5px;
+      padding: 10px;
+      height: 20vh;
+    }
+    .bankBtns {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .bankBtns button {
+      margin-left: 20px;
+    }
+  </style>
+{% endblock %}
+{% block content_body %}
+  <div class="list-container">
+    <div class="list-body">
+      <div class="course-edit-nav">
+        <ul class="nav nav-tabs">
+          <li role="presentation"><a href="{{ url_for('admin.course_manage', c_id=course.id) }}">基础信息</a></li>
+          {% if course.need_learn or course.is_public %}
+            <li role="presentation"><a>课件视频</a></li>
+          {% endif %}
+          {% if course.need_exam %}
+            <li role="presentation" class="active"><a href="#">题库及试卷</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="list-head">
+        <div>题型分布</div>
+        <button class="btn btn-primary btn-sm" id="saveBtn">保存</button>
+      </div>
+      <div class="list-table">
+        <table>
+          <thead>
+          <tr>
+            <td></td>
+            <td>题型数量</td>
+            <td>题库数量</td>
+            <td>题型分数</td>
+            <td>题型总分</td>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>判断</td>
+            <td><input type="number" class="exam-input" name="judge_num" value="0" /></td>
+            <td><input type="number" class="exam-input" name="judge_num_now" value="{{ course.judge_nums }}" disabled/></td>
+            <td><input type="number" class="exam-input" name="judge_score" value="0" /></td>
+            <td class="total">0</td>
+          </tr>
+          <tr>
+            <td>单选</td>
+            <td><input type="number" class="exam-input" name="radio_num" value="0" /></td>
+            <td><input type="number" class="exam-input" name="radio_num_now" value="{{ course.radio_nums }}" disabled/></td>
+            <td><input type="number" class="exam-input" name="radio_score" value="0" /></td>
+            <td class="total">0</td>
+          </tr>
+          <tr>
+            <td>多选</td>
+            <td><input type="number" class="exam-input" name="multiple_num" value="0" /></td>
+            <td><input type="number" class="exam-input" name="multiple_num_now" value="{{ course.multiple_nums }}" disabled/></td>
+            <td><input type="number" class="exam-input" name="multiple_score" value="0" /></td>
+            <td class="total">0</td>
+          </tr>
+          </tbody>
+        </table>
+        <div class="examInfo">
+          <div class="passInfo">
+            <div>
+              <label for="">分数线</label>
+              &nbsp;&nbsp;<input type="number" class="exam-input" value="60" name="pass_score">
+            </div>
+            <div>
+              <label for="">试卷总分</label>
+              &nbsp;&nbsp;<input type="number" class="exam-input" value="0" name="exam_total">
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="list-head">
+        <div>题库管理</div>
+      </div>
+      <div class="bankCards ">
+        <div class="bankCard">
+          <h4>判断</h4>
+          <div class="nums">
+            题库中的数量: {{ course.judge_nums }}
+          </div>
+          <div class="bankBtns">
+            <a href="#">模板下载</a>
+            <button class="btn btn-warning btn-sm">导入</button>
+            <button class="btn btn-success btn-sm" id="addJudge">新增</button>
+            <button class="btn btn-info btn-sm">查看</button>
+          </div>
+        </div>
+        <div class="bankCard">
+          <h4>单选</h4>
+          <div class="nums">
+            题库中的数量: {{ course.radio_nums }}
+          </div>
+          <div class="bankBtns">
+            <a href="#">模板下载</a>
+            <button class="btn btn-warning btn-sm">导入</button>
+            <button class="btn btn-success btn-sm" id="addRadio">新增</button>
+            <button class="btn btn-info btn-sm">查看</button>
+          </div>
+        </div>
+        <div class="bankCard">
+          <h4>多选</h4>
+          <div class="nums">
+            题库中的数量: {{ course.multiple_nums }}
+          </div>
+          <div class="bankBtns">
+            <a href="#">模板下载</a>
+            <button class="btn btn-warning btn-sm">导入</button>
+            <button class="btn btn-success btn-sm" id="addMultiple">新增</button>
+            <button class="btn btn-info btn-sm">查看</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block _scripts %}
+  <script src="{{ url_for('static', filename='js/juicer-min.js') }}"></script>
+  <script>
+      function changeTotal(score, that){
+          let total = $(that).val() * score;
+          if ($(that).parent().next().val() < $(that).val()){
+              console.log('超额')
+          }
+          $(that).parent().next().next().next().html(total);
+          updateTotal();
+      }
+
+      function updateTotal(){
+          let total = 0;
+          $('.total').each(function () {
+              total += parseInt($(this).html().toString());
+          });
+          $('input[name="exam_total"]').val(total);
+      }
+
+      function swalExamChoice(name, src){
+          let explain = '';
+          if (name === '多选'){
+              explain = '请使用\'&\'将答案分隔开 <br/>比如：答案1&答案2'
+          }
+          parent.swal({
+              title: '新增'+ name,
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: '提交',
+              cancelButtonText: '取消',
+              html:'<div class="input-group">\n' +
+                  '    <div class="form-group">\n' +
+                  '      <label for="examQuestion">问题</label>\n' +
+                  '      <input type="text" class="form-control" id="examQuestion" placeholder="您要输入的问题是？">\n' +
+                  '    </div>\n' +
+                  '    <div class="form-group" >\n' +
+                  '      <label for="exampleInputEmail1">答案</label>\n' +
+                  '      <input type="text" class="form-control" id="examAnswer" placeholder="填入上面问题的标准答案" >\n' +
+                  '      <div class="explain">' + explain + '</div>' +
+                  '    </div>\n' +
+                  '    <div class="form-group">\n' +
+                  '      <label for="exampleInputEmail1">选项1</label>\n' +
+                  '      <input type="text" class="form-control" id="examOption1" placeholder="问题的选项！">\n' +
+                  '    </div>\n' +
+                  '    <div class="form-group">\n' +
+                  '      <label for="exampleInputEmail1">选项2</label>\n' +
+                  '      <input type="text" class="form-control" id="examOption2" placeholder="问题的选项！">\n' +
+                  '    </div>\n' +
+                  '    <div class="form-group">\n' +
+                  '      <label for="exampleInputEmail1">选项3</label>\n' +
+                  '      <input type="text" class="form-control" id="examOption3" placeholder="问题的选项！">\n' +
+                  '    </div>\n' +
+                  '  <div class="form-group">\n' +
+                  '      <label for="exampleInputEmail1">选项4</label>\n' +
+                  '      <input type="text" class="form-control" id="examOption4" placeholder="问题的选项！">\n' +
+                  '    </div>\n' +
+                  '  </div>',
+              preConfirm: function () {
+                  return new Promise(function (resolve) {
+                      resolve({
+                              question: parent.$('#examQuestion').val(),
+                              answer: parent.$('#examAnswer').val(),
+                              option1: parent.$('#examOption1').val(),
+                              option2: parent.$('#examOption2').val(),
+                              option3: parent.$('#examOption3').val(),
+                              option4: parent.$('#examOption4').val(),
+                          }
+                      )
+                  })
+              },
+              onOpen: function () {
+                  parent.$('#examQuestion').focus()
+              }
+          }).then(function (result) {
+              console.log(result);
+              console.log(src)
+          }).catch(swal.noop)
+      }
+
+      $(document).ready(function () {
+          let judge_num = $('input[name="judge_num"]'),
+              judge_score = $('input[name="judge_score"]'),
+              radio_num = $('input[name="radio_num"]'),
+              radio_score = $('input[name="radio_score"]'),
+              multiple_num = $('input[name="multiple_num"]'),
+              multiple_score = $('input[name="multiple_score"]'),
+              pass_score = $('input[name="pass_score"]'),
+              total_score = $('input[name="exam_total"]');
+
+
+          judge_num.change(function () {
+              let score = judge_score.val();
+              changeTotal(score, this);
+          });
+
+          radio_num.change(function () {
+              let score = radio_score.val();
+              changeTotal(score, this);
+          });
+
+          multiple_num.change(function () {
+              let score = multiple_score.val();
+              changeTotal(score, this);
+          });
+
+          judge_score.change(function () {
+              let num = judge_num.val();
+              let total = $(this).val() * num;
+              $(this).parent().next().html(total);
+              updateTotal();
+          });
+
+          radio_score.change(function () {
+              let num = radio_num.val();
+              let total = $(this).val() * num;
+              $(this).parent().next().html(total);
+              updateTotal();
+
+          });
+
+          multiple_score.change(function () {
+              let num = multiple_num.val();
+              let total = $(this).val() * num;
+              $(this).parent().next().html(total);
+              updateTotal();
+
+          });
+
+          $('#saveBtn').click(function () {
+              let data = JSON.stringify({
+                  c_id: '{{ course.id }}',
+                  exam: {
+                      judge_num: judge_num.val(),
+                      judge_score: judge_score.val(),
+                      radio_num: radio_num.val(),
+                      radio_score: radio_score.val(),
+                      multiple_num: multiple_num.val(),
+                      multiple_score: multiple_score.val(),
+                      pass_score: pass_score.val(),
+                      total_score: total_score.val()
+                  }
+              });
+
+              a_json(
+                  "{{ url_for('api.update_exam') }}",
+                  "UPDATE",
+                  data
+              )
+          });
+
+          $('#addMultiple').click(function () {
+              swalExamChoice('多选', 'src');
+          });
+
+          $('#addRadio').click(function () {
+              swalExamChoice('单选', 'src');
+          });
+
+          $('#addJudge').click(function () {
+              parent.swal({
+                  title: '新增判断',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  confirmButtonText: '提交',
+                  cancelButtonText: '取消',
+                  html:'<div class="input-group">\n' +
+                      '    <div class="form-group">\n' +
+                      '      <label for="examQuestion">问题</label>\n' +
+                      '      <input type="text" class="form-control" id="examQuestion" placeholder="您要输入的问题是？">\n' +
+                      '    </div>\n' +
+                      '    <div class="form-group" >\n' +
+                      '      <label for="exampleInputEmail1">答案</label>\n' +
+                      '      <div class="radio">'+
+                      '        <input type="radio" class="form-control" name="examAnswer" value="1" checked>正确\n' +
+                      '      </div>\n' +
+                      '      <div class="radio">'+
+                      '        <input type="radio" class="form-control" name="examAnswer" value="0" >错误\n' +
+                      '      </div>\n' +
+                      '    </div>\n' +
+                      '  </div>',
+                  preConfirm: function () {
+                      return new Promise(function (resolve) {
+                          resolve({
+                                  question: parent.$('#examQuestion').val(),
+                                  answer: parent.$('#examAnswer').val(),
+                                  option1: parent.$('#examOption1').val(),
+                                  option2: parent.$('#examOption2').val(),
+                                  option3: parent.$('#examOption3').val(),
+                                  option4: parent.$('#examOption4').val(),
+                              }
+                          )
+                      })
+                  },
+                  onOpen: function () {
+                      parent.$('#examQuestion').focus()
+                  }
+              }).then(function (result) {
+                  console.log(result);
+                  console.log(src)
+              }).catch(swal.noop)
+          })
+      });
+  </script>
+{% endblock %}

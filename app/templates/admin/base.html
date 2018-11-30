@@ -114,6 +114,36 @@
     .nav-title {
       min-width: 6rem;
     }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .input-group input{
+      border: None;
+      width: 200px;
+      box-shadow: 0 0 0 0;
+      border-bottom: 2px solid rgb(51, 122, 183);
+    }
+    .input-group input:focus {
+      outline: 0;
+    }
+    .input-group .form-group {
+      width: 200px;
+    }
+    .explain {
+      font-size: 0.3rem;
+      color: #ce1b28;
+      font-weight: 500;
+    }
+
+    .radio {
+      text-align: left;
+      line-height: 2.2;
+      width: 200px;
+    }
+
   </style>
 {% endblock %}
 {% block content %}
@@ -137,7 +167,7 @@
           <div class="nav-ul">
             <div class="nav-li">
               <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.frm_index") }}')">
-                <div><span class="glyphicon glyphicon-home"></span> 后台首页</div>
+                <div class="nav-title"><span class="glyphicon glyphicon-home"></span> 后台首页</div>
               </div>
             </div>
             <div class="nav-li">
@@ -178,7 +208,7 @@
             {% if current_user.is_administrator %}
               <div class="nav-li">
                 <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.system_setting") }}')">
-                  <div><span class="glyphicon glyphicon-cog"></span> 系统设置</div>
+                  <div class="nav-title"><span class="glyphicon glyphicon-cog"></span> 系统设置</div>
                 </div>
               </div>
             {% endif %}
@@ -203,4 +233,6 @@
       }
 
   </script>
+
+
 {% endblock %}

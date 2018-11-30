@@ -231,3 +231,33 @@ def edit_video(c_id):
     course.update_duration()
     videos = [video.to_json() for video in course.videos.order_by(Video.order.desc(), Video.id).all()]
     return render_template('admin/video_edit.html', route=route, course=course, videos=videos)
+
+
+@admin.route('/course/<int:c_id>/exam')
+@admin_required
+def edit_exam(c_id):
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        },
+        {
+            'type': 'link',
+            'text': '编辑课程',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '题库及试卷',
+            'link': url_for('admin.edit_exam', c_id=c_id)
+        },
+    ]
+    course = Course.query.get_or_404(c_id)
+    course.update_duration()
+    videos = [video.to_json() for video in course.videos.order_by(Video.order.desc(), Video.id).all()]
+    return render_template('admin/exam_edit.html', route=route, course=course, videos=videos)

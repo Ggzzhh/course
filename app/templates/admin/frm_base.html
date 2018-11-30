@@ -34,8 +34,12 @@
       border-bottom: 1px solid gray;
       display: flex;
       flex-direction: row;
-      justify-content: flex-start;
+      justify-content: space-between;
       align-items: center;
+    }
+
+    .left {
+      display: flex;
     }
 
     .content-body {
@@ -68,18 +72,23 @@
 {% block content %}
   <div class="content-head">
     <div class="head-container">
-      <a href="{{ url_for('admin.frm_index') }}">
-        <span class="glyphicon glyphicon-home"></span>
-      </a>
-      <ol class="route">
-        {% for r in route %}
-          {% if r.get('type') and r['type'] == 'text' %}
-            <li>{{ r.get('text') }}</li>
-          {% elif r.get('type') and r['type'] == 'link' %}
-            <li><a href="{{ r['link'] }}">{{ r['text'] }}</a></li>
-          {% endif %}
-        {% endfor %}
-      </ol>
+      <div class="left">
+        <a href="{{ url_for('admin.frm_index') }}">
+          <span class="glyphicon glyphicon-home"></span>
+        </a>
+        <ol class="route">
+          {% for r in route %}
+            {% if r.get('type') and r['type'] == 'text' %}
+              <li>{{ r.get('text') }}</li>
+            {% elif r.get('type') and r['type'] == 'link' %}
+              <li><a href="{{ r['link'] }}">{{ r['text'] }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ol>
+      </div>
+      <div class="back">
+        <a href="javascript:history.back(-1)">返回</a>
+      </div>
     </div>
 
   </div>
