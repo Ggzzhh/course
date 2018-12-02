@@ -3,7 +3,8 @@ from flask import jsonify, request, current_app, url_for
 from flask_login import current_user
 
 from . import api
-from app.models import db, User, Course, Choice, Video, UserVideo
+from app.models import db, User, Course, Choice, Video, \
+    UserVideo, JudgeBank, RadioBank, MultipleBank
 from app.decorators import admin_required, user_required
 from app.tools import delete_file
 
@@ -313,4 +314,184 @@ def update_exam():
     return jsonify({
         'resCode': 'ok',
         'msg': '保存成功!'
+    })
+
+
+@api.route('/exam/judge', methods=['POST'])
+@admin_required
+def add_judge():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    judge = JudgeBank.from_json(json)
+    if judge:
+        course = Course.query.get_or_404(json.get('c_id'))
+        judge.course = course
+        db.session.add(judge)
+        return jsonify({
+            'resCode': 'ok',
+            'msg': '新增判断题成功！'
+        })
+    else:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+
+
+@api.route('/exam/radio', methods=['POST'])
+@admin_required
+def add_radio():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    radio = RadioBank.from_json(json)
+    if radio:
+        course = Course.query.get_or_404(json.get('c_id'))
+        radio.course = course
+        db.session.add(radio)
+        return jsonify({
+            'resCode': 'ok',
+            'msg': '新增单选题成功！'
+        })
+    else:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+
+
+@api.route('/exam/multiple', methods=['POST'])
+@admin_required
+def add_multiple():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    multiple = MultipleBank.from_json(json)
+    if multiple:
+        course = Course.query.get_or_404(json.get('c_id'))
+        multiple.course = course
+        db.session.add(multiple)
+        return jsonify({
+            'resCode': 'ok',
+            'msg': '新增多选题成功！'
+        })
+    else:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+
+
+@api.route('/exam/radio', methods=['DELETE'])
+@admin_required
+def del_radio():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    r_id = json.get('r_id')
+    radio = RadioBank.query.get_or_404(r_id)
+    db.session.delete(radio)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '该题已删除!'
+    })
+
+
+@api.route('/exam/judge', methods=['DELETE'])
+@admin_required
+def del_judge():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    j_id = json.get('j_id')
+    judge = JudgeBank.query.get_or_404(j_id)
+    db.session.delete(judge)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '该题已删除!'
+    })
+
+
+@api.route('/exam/multiple', methods=['DELETE'])
+@admin_required
+def del_multiple():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    m_id = json.get('m_id')
+    multiple = MultipleBank.query.get_or_404(m_id)
+    db.session.delete(multiple)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '该题已删除!'
+    })
+
+
+@api.route('/exam/radio', methods=['UPDATE'])
+@admin_required
+def edit_radio():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    radio = RadioBank.from_json(json)
+    db.session.add(radio)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '更改完成!'
+    })
+
+
+@api.route('/exam/multiple', methods=['UPDATE'])
+@admin_required
+def edit_multiple():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    multiple = MultipleBank.from_json(json)
+    db.session.add(multiple)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '更改完成!'
+    })
+
+
+@api.route('/exam/judge', methods=['UPDATE'])
+@admin_required
+def edit_judge():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    judge = JudgeBank.from_json(json)
+    db.session.add(judge)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '更改完成!'
     })

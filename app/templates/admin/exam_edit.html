@@ -27,7 +27,7 @@
 
     .exam-input {
       height: 1.5rem;
-      width: 60%;
+      width: 50%;
       min-width: 5rem;
       border: none;
       border-bottom: 1px solid rgb(51, 122, 183);
@@ -73,13 +73,14 @@
       height: 20vh;
     }
     .bankBtns {
+      width: 100%;
       margin-top: 10px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-around;
       align-items: center;
     }
-    .bankBtns button {
-      margin-left: 20px;
+    .bankBtns a {
+      min-width: 2rem;
     }
   </style>
 {% endblock %}
@@ -115,24 +116,26 @@
           <tbody>
           <tr>
             <td>判断</td>
-            <td><input type="number" class="exam-input" name="judge_num" value="0" /></td>
+            <td><input type="number" class="exam-input" name="judge_num" value="{{ course.judge_num }}" /></td>
             <td><input type="number" class="exam-input" name="judge_num_now" value="{{ course.judge_nums }}" disabled/></td>
-            <td><input type="number" class="exam-input" name="judge_score" value="0" /></td>
-            <td class="total">0</td>
+            <td><input type="number" class="exam-input" name="judge_score" value="{{ course.judge_score }}" /></td>
+            <td class="total">
+              {{ course.judge_num * course.judge_score }}
+            </td>
           </tr>
           <tr>
             <td>单选</td>
-            <td><input type="number" class="exam-input" name="radio_num" value="0" /></td>
+            <td><input type="number" class="exam-input" name="radio_num" value="{{ course.radio_num }}" /></td>
             <td><input type="number" class="exam-input" name="radio_num_now" value="{{ course.radio_nums }}" disabled/></td>
-            <td><input type="number" class="exam-input" name="radio_score" value="0" /></td>
-            <td class="total">0</td>
+            <td><input type="number" class="exam-input" name="radio_score" value="{{ course.radio_score }}" /></td>
+            <td class="total">{{ course.radio_num * course.radio_score }}</td>
           </tr>
           <tr>
             <td>多选</td>
-            <td><input type="number" class="exam-input" name="multiple_num" value="0" /></td>
+            <td><input type="number" class="exam-input" name="multiple_num" value="{{ course.multiple_num }}" /></td>
             <td><input type="number" class="exam-input" name="multiple_num_now" value="{{ course.multiple_nums }}" disabled/></td>
-            <td><input type="number" class="exam-input" name="multiple_score" value="0" /></td>
-            <td class="total">0</td>
+            <td><input type="number" class="exam-input" name="multiple_score" value="{{ course.multiple_score }}" /></td>
+            <td class="total">{{ course.multiple_num * course.multiple_score }}</td>
           </tr>
           </tbody>
         </table>
@@ -140,11 +143,15 @@
           <div class="passInfo">
             <div>
               <label for="">分数线</label>
-              &nbsp;&nbsp;<input type="number" class="exam-input" value="60" name="pass_score">
+              &nbsp;&nbsp;<input type="number" class="exam-input" value="{{ course.pass_score }}" name="pass_score">
+            </div>
+            <div>
+              <label for="">考试时间(分)</label>
+              &nbsp;&nbsp;<input type="number" class="exam-input" value="{{ course.exam_time }}" name="exam_time">
             </div>
             <div>
               <label for="">试卷总分</label>
-              &nbsp;&nbsp;<input type="number" class="exam-input" value="0" name="exam_total">
+              &nbsp;&nbsp;<input type="number" class="exam-input" value="{{ course.total_score }}" name="exam_total">
             </div>
 
           </div>
@@ -163,7 +170,7 @@
             <a href="#">模板下载</a>
             <button class="btn btn-warning btn-sm">导入</button>
             <button class="btn btn-success btn-sm" id="addJudge">新增</button>
-            <button class="btn btn-info btn-sm">查看</button>
+            <a class="btn btn-info btn-sm" href="{{ url_for('admin.judge_list', c_id=course.id) }}">查看</a>
           </div>
         </div>
         <div class="bankCard">
@@ -175,7 +182,7 @@
             <a href="#">模板下载</a>
             <button class="btn btn-warning btn-sm">导入</button>
             <button class="btn btn-success btn-sm" id="addRadio">新增</button>
-            <button class="btn btn-info btn-sm">查看</button>
+            <a href="{{ url_for('admin.radio_list', c_id=course.id) }}" class="btn btn-info btn-sm">查看</a>
           </div>
         </div>
         <div class="bankCard">
@@ -187,7 +194,7 @@
             <a href="#">模板下载</a>
             <button class="btn btn-warning btn-sm">导入</button>
             <button class="btn btn-success btn-sm" id="addMultiple">新增</button>
-            <button class="btn btn-info btn-sm">查看</button>
+            <a class="btn btn-info btn-sm" href="{{ url_for('admin.multiple_list', c_id=course.id) }}">查看</a>
           </div>
         </div>
       </div>
@@ -199,8 +206,9 @@
   <script>
       function changeTotal(score, that){
           let total = $(that).val() * score;
-          if ($(that).parent().next().val() < $(that).val()){
-              console.log('超额')
+          if ($(that).parent().next().find('input').val() < $(that).val()){
+              swal('超出题库中习题数量!');
+              $(that).val($(that).parent().next().find('input').val());
           }
           $(that).parent().next().next().next().html(total);
           updateTotal();
@@ -269,8 +277,21 @@
                   parent.$('#examQuestion').focus()
               }
           }).then(function (result) {
-              console.log(result);
-              console.log(src)
+              for (let index in result){
+                  if (result[index] === ""){
+                      parent.swal('问题、答案以及选项不能为空！', '', 'error');
+                      return
+                  }
+              }
+              result.c_id = "{{ course.id }}";
+              a_json(
+                  src,
+                  "POST",
+                  JSON.stringify(result),
+                  function (data) {
+                      swal(data.msg, '', 'success').then(()=>document.location.reload())
+                  }
+              )
           }).catch(swal.noop)
       }
 
@@ -282,6 +303,7 @@
               multiple_num = $('input[name="multiple_num"]'),
               multiple_score = $('input[name="multiple_score"]'),
               pass_score = $('input[name="pass_score"]'),
+              exam_time = $('input[name="exam_time"]'),
               total_score = $('input[name="exam_total"]');
 
 
@@ -334,23 +356,27 @@
                       multiple_num: multiple_num.val(),
                       multiple_score: multiple_score.val(),
                       pass_score: pass_score.val(),
-                      total_score: total_score.val()
+                      total_score: total_score.val(),
+                      exam_time: exam_time.val()
                   }
               });
 
               a_json(
                   "{{ url_for('api.update_exam') }}",
                   "UPDATE",
-                  data
+                  data,
+                  (data)=>{
+                      parent.swal(data.msg, '', 'success').then(()=>document.location.reload())
+                  }
               )
           });
 
           $('#addMultiple').click(function () {
-              swalExamChoice('多选', 'src');
+              swalExamChoice('多选', '{{ url_for("api.add_multiple") }}');
           });
 
           $('#addRadio').click(function () {
-              swalExamChoice('单选', 'src');
+              swalExamChoice('单选', '{{ url_for("api.add_radio") }}');
           });
 
           $('#addJudge').click(function () {
@@ -379,11 +405,7 @@
                       return new Promise(function (resolve) {
                           resolve({
                                   question: parent.$('#examQuestion').val(),
-                                  answer: parent.$('#examAnswer').val(),
-                                  option1: parent.$('#examOption1').val(),
-                                  option2: parent.$('#examOption2').val(),
-                                  option3: parent.$('#examOption3').val(),
-                                  option4: parent.$('#examOption4').val(),
+                                  answer: parent.$('input[name="examAnswer"]:checked').val()
                               }
                           )
                       })
@@ -392,8 +414,18 @@
                       parent.$('#examQuestion').focus()
                   }
               }).then(function (result) {
-                  console.log(result);
-                  console.log(src)
+                  if (result.question !== ""){
+                      result.c_id = "{{ course.id }}";
+                      a_json(
+                          "{{ url_for('api.add_judge') }}",
+                          "POST",
+                          JSON.stringify(result),
+                          function (data) {
+                              swal(data.msg, '', 'success').then(()=>document.location.reload())
+                          }
+                      )
+                  }
+                  else parent.swal('问题及答案不能为空！', '', 'error')
               }).catch(swal.noop)
           })
       });

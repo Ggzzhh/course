@@ -286,6 +286,7 @@ class Course(db.Model):
     # 考试相关
     total_score = db.Column(db.Integer, default=100)
     pass_score = db.Column(db.Integer, default=60)
+    exam_time = db.Column(db.Integer, default=45)
 
     radio_num = db.Column(db.Integer, default=0)
     radio_score = db.Column(db.Integer, default=0)
@@ -389,6 +390,7 @@ class Course(db.Model):
             self.radio_score = data.get('radio_score')
             self.total_score = data.get('total_score')
             self.pass_score = data.get('pass_score')
+            self.exam_time = data.get('exam_time')
             return self
 
     @staticmethod
@@ -472,7 +474,7 @@ class Course(db.Model):
     def radio_nums(self):
         res = 0
         try:
-            res = len(self.radio_num.all())
+            res = len(self.radios.all())
         except:
             pass
         return res
@@ -481,7 +483,7 @@ class Course(db.Model):
     def multiple_nums(self):
         res = 0
         try:
-            res = len(self.multiple_num.all())
+            res = len(self.multiples.all())
         except:
             pass
         return res
@@ -490,7 +492,7 @@ class Course(db.Model):
     def judge_nums(self):
         res = 0
         try:
-            res = len(self.judge_num.all())
+            res = len(self.judges.all())
         except:
             pass
         return res
@@ -568,6 +570,45 @@ class RadioBank(db.Model):
     option3 = db.Column(db.String(256), nullable=False)
     option4 = db.Column(db.String(256), nullable=False)
 
+    @staticmethod
+    def from_json(json):
+        print(json)
+        r_id = json.get('r_id')
+        question = json.get('question')
+        answer = json.get('answer')
+        o1 = json.get('option1')
+        o2 = json.get('option2')
+        o3 = json.get('option3')
+        o4 = json.get('option4')
+
+        if question is None or answer is None:
+            return None
+
+        if r_id:
+            radio = RadioBank.query.get(r_id)
+            radio.question = question
+        else:
+            radio = RadioBank(question=question)
+        radio.answer = answer
+        radio.option1 = o1
+        radio.option2 = o2
+        radio.option3 = o3
+        radio.option4 = o4
+        return radio
+
+    def to_json(self):
+        data = {
+            'id': self.id,
+            'c_id': self.course_id,
+            'question': self.question,
+            'answer': self.answer,
+            'o1': self.option1,
+            'o2': self.option2,
+            'o3': self.option3,
+            'o4': self.option4
+        }
+        return data
+
 
 class JudgeBank(db.Model):
     __tablename__ = 'judge_bank'
@@ -575,6 +616,33 @@ class JudgeBank(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
     question = db.Column(db.String(256), nullable=False)
     answer = db.Column(db.Boolean, nullable=False)
+
+    def to_json(self):
+        data = {
+            'id': self.id,
+            'c_id': self.course_id,
+            'question': self.question,
+            'answer': "正确" if self.answer else "错误"
+        }
+        return data
+
+    @staticmethod
+    def from_json(json):
+        print(json)
+        j_id = json.get('j_id')
+        question = json.get('question')
+        answer = json.get('answer')
+
+        if question is None or answer is None:
+            return None
+
+        if j_id:
+            judge = JudgeBank.query.get(j_id)
+            judge.question = question
+        else:
+            judge = JudgeBank(question=question)
+        judge.answer = True if answer == '1' else False
+        return judge
 
 
 class MultipleBank(db.Model):
@@ -589,3 +657,40 @@ class MultipleBank(db.Model):
     option3 = db.Column(db.String(256), nullable=False)
     option4 = db.Column(db.String(256), nullable=False)
 
+    @staticmethod
+    def from_json(json):
+        m_id = json.get('m_id')
+        question = json.get('question')
+        answer = json.get('answer')
+        o1 = json.get('option1')
+        o2 = json.get('option2')
+        o3 = json.get('option3')
+        o4 = json.get('option4')
+
+        if question is None or answer is None:
+            return None
+
+        if m_id:
+            multiple = MultipleBank.query.get(m_id)
+            multiple.question = question
+        else:
+            multiple = MultipleBank(question=question)
+        multiple.answer = answer
+        multiple.option1 = o1
+        multiple.option2 = o2
+        multiple.option3 = o3
+        multiple.option4 = o4
+        return multiple
+
+    def to_json(self):
+        data = {
+            'id': self.id,
+            'c_id': self.course_id,
+            'question': self.question,
+            'answer': self.answer,
+            'o1': self.option1,
+            'o2': self.option2,
+            'o3': self.option3,
+            'o4': self.option4
+        }
+        return data

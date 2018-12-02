@@ -9,7 +9,7 @@ from flask_login import login_manager, login_user, current_user, logout_user
 from . import admin
 from app import db
 from app.decorators import admin_required
-from app.models import User, Classify, Course, Video
+from app.models import User, Classify, Course, Video, RadioBank, JudgeBank, MultipleBank
 from app.tools import save_to_static
 
 login_manager.login_view = 'admin.login'
@@ -258,6 +258,121 @@ def edit_exam(c_id):
         },
     ]
     course = Course.query.get_or_404(c_id)
-    course.update_duration()
-    videos = [video.to_json() for video in course.videos.order_by(Video.order.desc(), Video.id).all()]
-    return render_template('admin/exam_edit.html', route=route, course=course, videos=videos)
+    return render_template('admin/exam_edit.html', route=route, course=course)
+
+
+@admin.route('/course/<int:c_id>/exam/judge')
+@admin_required
+def judge_list(c_id):
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        },
+        {
+            'type': 'link',
+            'text': '编辑课程',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '题库及试卷',
+            'link': url_for('admin.edit_exam', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '判断题列表',
+            'link': url_for('admin.judge_list', c_id=c_id)
+        },
+    ]
+    course = Course.query.get_or_404(c_id)
+    q = request.args.get('q')
+    if q and q != '':
+        judges = course.judges.filter(JudgeBank.question.like('%{}%'.format(q))).order_by(JudgeBank.id).all()
+    else:
+        judges = course.judges.order_by(JudgeBank.id).all()
+    judges = [judge.to_json() for judge in judges]
+    return render_template('admin/judge_list.html', route=route, course=course, judges=judges)
+
+
+@admin.route('/course/<int:c_id>/exam/radio')
+@admin_required
+def radio_list(c_id):
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        },
+        {
+            'type': 'link',
+            'text': '编辑课程',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '题库及试卷',
+            'link': url_for('admin.edit_exam', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '单选题列表',
+            'link': url_for('admin.radio_list', c_id=c_id)
+        },
+    ]
+    course = Course.query.get_or_404(c_id)
+    q = request.args.get('q')
+    if q and q != '':
+        radios = course.radios.filter(RadioBank.question.like('%{}%'.format(q))).order_by(RadioBank.id).all()
+    else:
+        radios = course.radios.order_by(RadioBank.id).all()
+    radios = [radio.to_json() for radio in radios]
+    return render_template('admin/radio_list.html', route=route, course=course, radios=radios)
+
+
+@admin.route('/course/<int:c_id>/exam/multiple')
+@admin_required
+def multiple_list(c_id):
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程列表',
+            'link': url_for('admin.course_list')
+        },
+        {
+            'type': 'link',
+            'text': '编辑课程',
+            'link': url_for('admin.course_manage', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '题库及试卷',
+            'link': url_for('admin.edit_exam', c_id=c_id)
+        },
+        {
+            'type': 'link',
+            'text': '多选题列表',
+            'link': url_for('admin.multiple_list', c_id=c_id)
+        },
+    ]
+    course = Course.query.get_or_404(c_id)
+    q = request.args.get('q')
+    if q and q != '':
+        multiples = course.multiples.filter(MultipleBank.question.like('%{}%'.format(q))).order_by(MultipleBank.id).all()
+    else:
+        multiples = course.multiples.order_by(MultipleBank.id).all()
+    multiples = [multiple.to_json() for multiple in multiples]
+    return render_template('admin/multiple_list.html', route=route, course=course, multiples=multiples)
