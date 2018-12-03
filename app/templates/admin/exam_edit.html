@@ -78,9 +78,26 @@
       display: flex;
       justify-content: space-around;
       align-items: center;
+
     }
     .bankBtns a {
       min-width: 2rem;
+    }
+
+    .uploadFileBtn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .uploadFileBtn>input[type=file]{
+      margin-top: 0;
+      position: absolute;
+      opacity: 0;
+      font-size: 100px;
+      right: 0;
+      top: 0;
+      filter: alpha(opacity=0);
+      cursor: pointer
     }
   </style>
 {% endblock %}
@@ -167,8 +184,12 @@
             题库中的数量: {{ course.judge_nums }}
           </div>
           <div class="bankBtns">
-            <a href="#">模板下载</a>
-            <button class="btn btn-warning btn-sm">导入</button>
+            <a href="{{ url_for('main.download', filename="判断题模板.xlsx") }}">模板下载</a>
+            <div class="btn btn-warning btn-sm uploadFileBtn">
+              <input type="file" name="excelUpload"
+                     accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+              导入
+            </div>
             <button class="btn btn-success btn-sm" id="addJudge">新增</button>
             <a class="btn btn-info btn-sm" href="{{ url_for('admin.judge_list', c_id=course.id) }}">查看</a>
           </div>
@@ -179,8 +200,12 @@
             题库中的数量: {{ course.radio_nums }}
           </div>
           <div class="bankBtns">
-            <a href="#">模板下载</a>
-            <button class="btn btn-warning btn-sm">导入</button>
+            <a href="{{ url_for('main.download', filename="单选题模板.xlsx") }}">模板下载</a>
+            <div class="btn btn-warning btn-sm uploadFileBtn">
+              <input type="file" name="excelUpload"
+                     accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+              导入
+            </div>
             <button class="btn btn-success btn-sm" id="addRadio">新增</button>
             <a href="{{ url_for('admin.radio_list', c_id=course.id) }}" class="btn btn-info btn-sm">查看</a>
           </div>
@@ -191,8 +216,12 @@
             题库中的数量: {{ course.multiple_nums }}
           </div>
           <div class="bankBtns">
-            <a href="#">模板下载</a>
-            <button class="btn btn-warning btn-sm">导入</button>
+            <a href="{{ url_for('main.download', filename="多选题模板.xlsx") }}">模板下载</a>
+            <div class="btn btn-warning btn-sm uploadFileBtn">
+              <input type="file" name="excelUpload"
+                     accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+              导入
+            </div>
             <button class="btn btn-success btn-sm" id="addMultiple">新增</button>
             <a class="btn btn-info btn-sm" href="{{ url_for('admin.multiple_list', c_id=course.id) }}">查看</a>
           </div>
@@ -427,7 +456,27 @@
                   }
                   else parent.swal('问题及答案不能为空！', '', 'error')
               }).catch(swal.noop)
-          })
+          });
+
+          $('input[name="excelUpload"]').change(function () {
+              console.log(this.files[0].name);
+              let data = new FormData();
+              data.append('file', this.files[0]);
+              data.append('c_id', '{{ course.id }}');
+              $.ajax({
+                  url: "{{ url_for('api.upload_topic') }}",
+                  data: data,
+                  method: "POST",
+                  dataType: "json",
+                  cache: false,//上传文件无需缓存
+                  processData: false,//用于对data参数进行序列化处理 这里必须false
+                  contentType: false, //必须
+                  success: function (data) {
+                      parent.swal(data.msg).then(()=>document.location.reload())
+                  }
+              })
+
+          });
       });
   </script>
 {% endblock %}

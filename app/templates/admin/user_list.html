@@ -1,10 +1,132 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
 {% endblock %}
 {% block content_body %}
-  人员列表
+  <div class="list-container">
+    <div class="list-body">
+      <div class="list-search">
+        <form action="{{ url_for('admin.course_list') }}">
+          <div class="list-head">
+            <div>查找条件</div>
+            <div>
+              <button type="submit" id="courseSearch" class="btn btn-success btn-sm">搜索</button>
+            </div>
+          </div>
+          <div class="search-content">
+            <div class="form-horizontal">
+              <div class="form-title">课程名称 * </div>
+              <input type="text" class="form-control" name="courseName" placeholder="请输入">
+            </div>
+            <div class="form-horizontal">
+              <div class="form-title">发布状态 * </div>
+              <select class="form-control" name="courseStatus">
+                <option value="2">不限</option>
+                <option value="1">已发布</option>
+                <option value="0">未发布</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="list-content">
+        <div class="list-head">
+          <div>课程列表</div>
+        </div>
+        <div class="list-table">
+          <table>
+            <thead>
+            <tr>
+              <td>名称</td>
+              <td>类型</td>
+              <td>分类</td>
+              <td>发布时间</td>
+              <td>课件数</td>
+              <td>选课人数</td>
+              <td>通过人数</td>
+              <td>状态</td>
+              <td>操作</td>
+            </tr>
+            </thead>
+            <tbody>
+            {% for course in courses %}
+              <tr>
+                <td>{{ course.name }}</td>
+                <td>{{ course.type }}</td>
+                <td>{{ course.classify }}</td>
+                <td>{{ course.newstime }}</td>
+                <td>{{ course.video_num }}</td>
+                <td>{{ course.choice_num }}</td>
+                <td>{{ course.pass_num }}</td>
+                <td
+                    {% if course.status == '已发布' %}
+                      class="green"
+                    {% else %}
+                      class="red"
+                    {% endif %}
+                >{{ course.status }}</td>
+                <td>
+                  <a href="{{ url_for('admin.course_manage', c_id=course.id) }}">编辑</a>
+                  <a href="#" onclick="deleteCourse('{{ course.id }}')">删除</a>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="list-pagination">
+          <nav aria-label="...">
+            <ul class="pager">
+              {% if prev %}
+                <li><a href="{{ url_for('admin.course_list',
+              page=prev, courseName=course_name, courseStatus=course_status) }}">上一页</a></li>
+              {% else %}
+                <li class="disabled"><a href="#">上一页</a></li>
+              {% endif %}
+              <li>共 {{ total }} 页 当前第 {{ page }} 页</li>
+              {% if next %}
+                <li><a href="{{ url_for('admin.course_list',
+              page=next, courseName=course_name, courseStatus=course_status) }}">下一页</a></li>
+              {% else %}
+                <li class="disabled"><a href="#">下一页</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 {% block _scripts %}
+  <script>
+      function deleteCourse(id) {
+          event.preventDefault();
+          parent.swal({
+              title: '确定删除吗？',
+              text: '你将无法恢复它！',
+              type: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: '确定删除！',
+          }).then(function(){
+              a_json(
+                  '/api/admin/course/'+id,
+                  'DELETE',
+                  '',
+                  ()=>{
+                      parent.swal('删除', '课程已经被删除', 'success').then(
+                          ()=>document.location.reload()
+                      )
+                  }
+              )
+          });
 
+      }
+
+      $(document).ready(function () {
+        let msg = '{{ msg }}';
+        if (msg !== '') parent.swal('信息', msg, 'success')
+      })
+  </script>
 {% endblock %}

@@ -1,10 +1,67 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+  <style>
+    .list-head {
+      margin-top: 0.5rem;
+    }
+  </style>
 {% endblock %}
 {% block content_body %}
-  人员新增
+  <div class="list-body">
+    <div class="list-head">
+      人员新增
+    </div>
+    <div class="frm-container">
+      <form class="form frm-content" id="userFrm" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+          <label for="">姓名</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <div>权限</div>
+          <label class="radio-inline">
+            <input type="radio" name="role" value="User" checked> 普通用户
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="role" value="Moderator"
+                {% if not current_user.is_administrator %}
+                   disabled
+                {% endif %}
+            > 管理员
+          </label>
+          <div class="explain">管理员无法学习课程。</div>
+        </div>
+        <div class="form-group">
+          <label for="">手机号</label>
+          <input type="number" name="phone" class="form-control" >
+          <div class="explain">
+            * 注：必须为11位纯数字,否则前端验证无法通过。
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="">密码</label>
+          <input type="text" name="password" class="form-control" >
+        </div>
+
+        <div class="submit">
+          <button type="submit" class="btn btn-primary">新增</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
 {% endblock %}
 {% block _scripts %}
-
+  {{ super() }}
+  <script>
+    $(document).ready(function () {
+        let msg = "{{ msg }}";
+        if (msg !== ""){
+            parent.swal(msg);
+        }
+    })
+  </script>
 {% endblock %}

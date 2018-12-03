@@ -91,6 +91,11 @@
       user-select: none;
     }
 
+    .collapse .nav-btn {
+      transition: padding 0.3s;
+      padding-left: 3rem;
+    }
+
     .nav-btn:active {
       top:2px;
     }
@@ -184,7 +189,7 @@
                 <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.course_list") }}')">
                   课程列表
                 </div>
-                <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.course_list") }}')">
+                <div class="nav-btn" onclick="setFramSrc('{{ url_for("admin.manage_classify") }}')">
                   课程分类
                 </div>
               </div>

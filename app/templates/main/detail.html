@@ -152,7 +152,7 @@
                   "",
                   function (data) {
                       // console.log(data.msg);
-                      window.location = "{{ url_for('main.exam_detail', course_id=course.id) }}"
+                      window.location = "{{ url_for('main.exam_detail', c_id=course.id) }}"
                   }
               );
           });

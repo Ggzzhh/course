@@ -91,6 +91,7 @@ class Choice(db.Model):
     video_nums = db.Column(db.Integer, default=0)
     finish_nums = db.Column(db.Integer, default=0)
     point = db.Column(db.Integer)
+    exam_time = db.Column(db.DateTime)
     last_seen = db.Column(db.DateTime, default=datetime.now())
     is_pass = db.Column(db.Boolean, default=False)
 
@@ -102,14 +103,18 @@ class Choice(db.Model):
             'course_url': url_for('main.course_detail', id=self.course_id),
             'newstime': self.course.newstime if self.course else None,
             'is_pass': '已通过' if self.is_pass else '未通过',
-            'learn_rate': self.learn_rate()
+            'is_pass_bol': self.is_pass,
+            'learn_rate': self.learn_rate(),
+            'exam_time': self.course.exam_time or 45,
+            'start_exam_time': self.exam_time or '未 知',
+            'point': self.point or 0
         }
         return data
 
     def update_pass(self):
         self.update_nums()
         learn_pass = False if self.video_nums == 0 else self.finish_nums >= self.video_nums
-        exam_pass = self.point and self.point >= 60
+        exam_pass = self.point and self.point >= (self.course.pass_score or 60)
         _type = self.course.get_type()
         if _type == '学习':
             self.is_pass = learn_pass
@@ -117,6 +122,8 @@ class Choice(db.Model):
             self.is_pass = exam_pass
         if _type == '培训':
             self.is_pass = learn_pass and exam_pass
+        if self.is_pass:
+            print('添加到表档案中，档案只记录，不删除!除非用户被删除!')
         db.session.add(self)
         db.session.commit()
 
@@ -228,6 +235,24 @@ class User(UserMixin, db.Model):
         }
         return data
 
+    @staticmethod
+    def from_json(data):
+        _id = data.get('_id')
+        name = data.get('name')
+        if _id:
+            user = User.query.get_or_404(_id)
+        else:
+            user = User(name=name)
+        user.phone = data.get('phone')
+        user.password = data.get('password')
+        role_name = data.get('role')
+        role = Role.query.filter_by(name=role_name).first()
+        if role:
+            user.role = role
+        else:
+            user.role = Role.query.filter_by(name="User").first()
+        return user
+
     def can(self, permissions):
         return self.role is not None and \
                (self.role.permissions & permissions) == permissions
@@ -284,7 +309,7 @@ class Course(db.Model):
                               cascade='all, delete-orphan'
                               )
     # 考试相关
-    total_score = db.Column(db.Integer, default=100)
+    total_score = db.Column(db.Integer, default=0)
     pass_score = db.Column(db.Integer, default=60)
     exam_time = db.Column(db.Integer, default=45)
 
@@ -326,6 +351,27 @@ class Course(db.Model):
             'choice_num': self.choice_nums(),
             'pass_num': self.choice_pass_nums()
         }
+        return data
+
+    def exam_to_json(self):
+        data = {}
+        if self.need_exam:
+            data['c_id'] = self.id
+            data['newstime'] = self.newstime
+            data['img_url'] = self.img_url
+            data['course'] = self.name
+            data['total_score'] = self.total_score
+            data['pass_score'] = self.pass_score
+            data['exam_time'] = self.exam_time
+            data['radio_num'] = self.radio_num
+            data['radio_score'] = self.radio_score
+            data['radio_total_score'] = (self.radio_num or 0) * (self.radio_score or 0)
+            data['multiple_num'] = self.multiple_num
+            data['multiple_score'] = self.multiple_score
+            data['multiple_total_score'] = (self.multiple_num or 0) * (self.multiple_score or 0)
+            data['judge_num'] = self.judge_num
+            data['judge_score'] = self.judge_score
+            data['judge_total_score'] = (self.judge_num or 0) * (self.judge_score or 0)
         return data
 
     @staticmethod
@@ -553,6 +599,19 @@ class Classify(db.Model):
             return [[c.id, c.name] for c in cls]
         return [c.name for c in cls]
 
+    @staticmethod
+    def all_course_num():
+        cls = Classify.query.order_by(Classify.id).all()
+        return [[c.id, c.name, c.get_course_num()] for c in cls]
+
+    def get_course_num(self):
+        num = 0
+        try:
+            num = len(self.courses.all())
+        except:
+            pass
+        return num
+
     def __repr__(self):
         return '<课程分类 %r>' % self.name
 
@@ -628,7 +687,6 @@ class JudgeBank(db.Model):
 
     @staticmethod
     def from_json(json):
-        print(json)
         j_id = json.get('j_id')
         question = json.get('question')
         answer = json.get('answer')
@@ -641,7 +699,7 @@ class JudgeBank(db.Model):
             judge.question = question
         else:
             judge = JudgeBank(question=question)
-        judge.answer = True if answer == '1' else False
+        judge.answer = True if answer in ('1', True, '正确') else False
         return judge
 
 

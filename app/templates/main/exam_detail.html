@@ -48,19 +48,19 @@
         <div class="exam-detail">
           题型说明：
           <div class="question-type">
-            判断  <span class="red">{{ detail.question_type['judge']['nums'] }}</span> 题
-            每题 <span class="red">{{ detail.question_type['judge']['score'] }}</span> 分
-            共 <span class="red">{{ detail.question_type['judge']['nums'] * detail.question_type['judge']['score'] }}</span> 分
+            判断  <span class="red">{{ detail.judge_num }}</span> 题
+            每题 <span class="red">{{ detail.judge_score }}</span> 分
+            共 <span class="red">{{ detail.judge_total_score }}</span> 分
           </div>
           <div class="question-type">
-            单选  <span class="red">{{ detail.question_type['single_selection']['nums'] }}</span> 题
-            每题 <span class="red">{{ detail.question_type['single_selection']['score'] }}</span> 分
-            共 <span class="red">{{ detail.question_type['single_selection']['nums'] * detail.question_type['single_selection']['score'] }}</span> 分
+            单选  <span class="red">{{ detail.radio_num }}</span> 题
+            每题 <span class="red">{{ detail.radio_score }}</span> 分
+            共 <span class="red">{{ detail.radio_total_score }}</span> 分
           </div>
           <div class="question-type">
-            多选  <span class="red">{{ detail.question_type['multi_selection']['nums'] }}</span> 题
-            每题 <span class="red">{{ detail.question_type['multi_selection']['score'] }}</span> 分
-            共 <span class="red">{{ detail.question_type['multi_selection']['nums'] * detail.question_type['multi_selection']['score'] }}</span> 分
+            多选  <span class="red">{{ detail.multiple_num }}</span> 题
+            每题 <span class="red">{{ detail.multiple_score }}</span> 分
+            共 <span class="red">{{ detail.multiple_total_score }}</span> 分
           </div>
 
         </div>

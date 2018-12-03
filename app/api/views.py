@@ -1,6 +1,7 @@
 
 from flask import jsonify, request, current_app, url_for
 from flask_login import current_user
+from pyexcel_xlsx import get_data
 
 from . import api
 from app.models import db, User, Course, Choice, Video, \
@@ -495,3 +496,58 @@ def edit_judge():
         'resCode': 'ok',
         'msg': '更改完成!'
     })
+
+
+@api.route('/upload/topic', methods=["POST"])
+@admin_required
+def upload_topic():
+    c_id = request.values.get('c_id')
+    print(c_id)
+    course = Course.query.get_or_404(c_id)
+    file = request.files.get('file')
+    try:
+        path = 'app/static/excels/excel.xlsx'
+        file.save(path)
+
+        sheets = get_data(path)
+        temp = None
+        for sheet in sheets:
+            data = sheets[sheet][1:]
+            for foo in data:
+                if sheet == "判断题":
+                    json = {
+                        'question': foo[0],
+                        'answer': foo[1]
+                    }
+                    temp = JudgeBank.from_json(json)
+                else:
+                    json = {
+                        'question': foo[0],
+                        'answer': foo[1],
+                        'option1': foo[2],
+                        'option2': foo[3],
+                        'option3': foo[4],
+                        'option4': foo[5],
+                    }
+                    if sheet == "单选题":
+                        temp = RadioBank.from_json(json)
+                    if sheet == "多选题":
+                        temp = MultipleBank.from_json(json)
+                if temp:
+                    temp.course = course
+                    db.session.add(temp)
+                else:
+                    return jsonify({
+                        'resCode': 'error',
+                        'msg': '导入文件错误！请下载模板并按照格式进行导入!'
+                    })
+        return jsonify({
+            'resCode': 'ok',
+            'msg': '导入完成!'
+        })
+    except Exception as e:
+        print(e)
+        return jsonify({
+            'resCode': 'error',
+            'msg': '导入时出现错误! --' + str(e)
+        })

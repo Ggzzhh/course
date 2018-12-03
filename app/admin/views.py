@@ -3,13 +3,13 @@
 # 作者: Ggzzhh
 # 创建时间: 2018/11/14
 
-from flask import url_for, render_template, current_app, request, abort, redirect
+from flask import url_for, render_template, current_app, request, abort, redirect, jsonify
 from flask_login import login_manager, login_user, current_user, logout_user
 
 from . import admin
 from app import db
 from app.decorators import admin_required
-from app.models import User, Classify, Course, Video, RadioBank, JudgeBank, MultipleBank
+from app.models import User, Classify, Course, Video, RadioBank, JudgeBank, MultipleBank, Choice
 from app.tools import save_to_static
 
 login_manager.login_view = 'admin.login'
@@ -113,9 +113,13 @@ def course_list():
     page = request.args.get('page', default=1, type=int)
     course_name = request.args.get('courseName', default=None)
     course_status = request.args.get('courseStatus', default=None, type=int)
+    user_phone = request.args.get('phone', default=None, type=int)
+    user = User.query.filter_by(phone=user_phone).first()
 
     query = Course.query
 
+    if user is not None:
+        query = query.join(Choice).filter(Choice.user == user)
     if course_name is not None:
         query = query.filter(Course.name.like('%{}%'.format(course_name)))
     if course_status is not None and course_status != 2:
@@ -139,16 +143,103 @@ def course_list():
                            )
 
 
-@admin.route('/user-manage/add')
+@admin.route('/course-manage/classify', methods=["POST", "GET", "DELETE"])
+@admin_required
+def manage_classify():
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '课程分类',
+            'link': url_for('admin.manage_classify')
+        }
+    ]
+    _id = request.args.get('cls_id')
+    if _id:
+        cls = Classify.query.get_or_404(_id)
+    else:
+        cls = None
+    if request.method == "DELETE":
+        if cls:
+            db.session.delete(cls)
+            return jsonify({
+                'resCode': 'ok',
+                'msg': '删除成功!'
+            })
+        else:
+            return jsonify({
+                'resCode': 'error',
+                'msg': '删除失败!目标不存在!'
+            })
+    if request.method == "POST":
+        name = request.args.get('name')
+        if cls:
+            cls.name = name
+            db.session.add(cls)
+            return jsonify({
+                'resCode': 'ok',
+                'msg': '修改成功!'
+            })
+        else:
+            cls = Classify(name=name)
+            db.session.add(cls)
+            return jsonify({
+                'resCode': 'ok',
+                'msg': '新增成功!'
+            })
+    classifies = Classify.all_course_num()
+    return render_template('admin/classify.html', classifies=classifies, route=route)
+
+
+@admin.route('/user-manage/add', methods=["POST", "GET"])
 @admin_required
 def add_user():
-    return render_template('admin/add_user.html')
+    msg = ''
+    route = [
+        {
+            'type': 'text',
+            'text': '人员管理'
+        },
+        {
+            'type': 'link',
+            'text': '人员新增',
+            'link': url_for('admin.add_user')
+        }
+    ]
+    if request.method == "POST":
+        form = request.form.to_dict()
+        phone = form.get('phone')
+        pwd = form.get('password')
+        if pwd == "" or phone == "":
+            msg = "新增失败！电话号码或者密码为空！"
+        elif len(phone) != 11:
+            msg = "新增失败！电话号码位数错误！"
+        else:
+            user = User.from_json(form)
+            db.session.add(user)
+            msg = "新增成功! "
+    return render_template('admin/add_user.html', route=route, msg=msg)
 
 
 @admin.route('/user-manage/list')
 @admin_required
 def user_list():
-    return render_template('admin/user_list.html')
+    route = [
+        {
+            'type': 'text',
+            'text': '人员管理'
+        },
+        {
+            'type': 'link',
+            'text': '人员列表',
+            'link': url_for('admin.user_list')
+        }
+    ]
+    # todo: 完成这个玩意
+    return render_template('admin/user_list.html', route=route)
 
 
 @admin.route('/system-setting')
@@ -376,3 +467,5 @@ def multiple_list(c_id):
         multiples = course.multiples.order_by(MultipleBank.id).all()
     multiples = [multiple.to_json() for multiple in multiples]
     return render_template('admin/multiple_list.html', route=route, course=course, multiples=multiples)
+
+

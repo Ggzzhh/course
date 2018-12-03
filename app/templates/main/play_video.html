@@ -150,6 +150,7 @@
                                   allowOutsideClick: false,
                                   preConfirm: function (answer) {
                                       return new Promise(function (resolve, reject) {
+                                          setTimeout(()=>{}, 1000);
                                           if (answer == a){
                                               resolve()
                                           }

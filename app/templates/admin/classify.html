@@ -29,33 +29,29 @@
   <div class="list-container">
     <div class="list-body">
       <div class="list-head">
-        <div>判断题列表</div>
+        <div>课程分类列表</div>
         <div>
-          <button type="submit" id="CSearch" class="btn btn-success btn-sm">搜索</button>
+          <button type="submit" id="addCls" class="btn btn-success btn-sm">新增</button>
         </div>
       </div>
       <div class="list-table">
         <table>
           <thead>
           <tr>
-            <td>问题</td>
-            <td>答案</td>
+            <td>名称</td>
+            <td>课程数</td>
             <td>操作</td>
           </tr>
           </thead>
           <tbody>
-          {% for judge in judges %}
+          {% for cls in classifies %}
             <tr>
-              <td>{{ judge.question }}</td>
-              <td>{{ judge.answer }}</td>
+              <td>{{ cls[1] }}</td>
+              <td>{{ cls[2] }}</td>
               <td>
-                <a href="#" onclick="editRadio({
-                    id: '{{ judge.id }}',
-                    question: '{{ judge.question }}',
-                    answer: '{{ judge.answer }}'
-                    })">编辑</a>
+                <a href="#" onclick="editClssify('{{ cls[0] }}', '{{ cls[1] }}')">编辑</a>
                 &nbsp;&nbsp;
-                <a href="#" onclick="delRadio('{{ judge.id }}')">删除</a>
+                <a href="#" onclick="delClssify('{{ cls[0] }}')">删除</a>
               </td>
             </tr>
           {% endfor %}
@@ -68,7 +64,7 @@
 {% block _scripts %}
   <script src="{{ url_for('static', filename='js/juicer-min.js') }}"></script>
   <script>
-      let delRadio = (id)=>{
+      let delClssify = (id)=>{
           event.preventDefault();
           parent.swal({
               title: '确定删除吗？',
@@ -80,9 +76,9 @@
               confirmButtonText: '确定删除！',
           }).then(()=>{
               a_json(
-                  "{{ url_for('api.del_judge') }}",
+                  "{{ url_for('admin.manage_classify') }}?cls_id="+id,
                   "DELETE",
-                  JSON.stringify({j_id:id}),
+                  JSON.stringify({}),
                   (data)=>{
                       parent.swal(data.msg, '', 'success').then(()=>document.location.reload())
                   }
@@ -91,71 +87,56 @@
 
       };
 
-      let editRadio = (data)=>{
+      let editClssify = (id, name)=>{
           event.preventDefault();
           parent.swal({
-              title: '编辑',
+              title: '编辑名称',
               showCancelButton: true,
               confirmButtonColor: '#3085d6',
               confirmButtonText: '提交',
               cancelButtonText: '取消',
-              html:'<div class="input-group">\n' +
-                  '    <div class="form-group">\n' +
-                  '      <label for="examQuestion">问题</label>\n' +
-                  '      <input type="text" class="form-control" id="examQuestion" ' +
-                  '             placeholder="您要输入的问题是？" value="' + data.question + '">\n' +
-                  '    </div>\n' +
-                  '    <div class="form-group" >\n' +
-                  '      <label for="exampleInputEmail1">答案</label>\n' +
-                  '      <div class="radio">'+
-                  '        <input type="radio" class="form-control" name="examAnswer" value="1" ' +
-                  '        ' + (data.answer === '正确'?'checked': '') + '>正确\n' +
-                  '      </div>\n' +
-                  '      <div class="radio">'+
-                  '        <input type="radio" class="form-control" name="examAnswer" value="0" ' +
-                  '        ' + (data.answer === '错误'?'checked': '') + '>错误\n' +
-                  '      </div>\n' +
-                  '    </div>\n' +
-                  '  </div>',
+              html: '<input id="swal-input1" class="swal2-input" value="'+name+'">',
               preConfirm: function () {
                   return new Promise(function (resolve) {
-                      resolve({
-                              question: parent.$('#examQuestion').val(),
-                              answer: parent.$('input[name="examAnswer"]:checked').val()
-                          }
+                      resolve(
+                          parent.$('#swal-input1').val()
                       )
                   })
               }
           }).then(function (result) {
-              for (let index in result){
-                  if (result[index] === ""){
-                      parent.swal('问题、答案以及选项不能为空！', '', 'error');
-                      return
-                  }
-              }
-              result.j_id = data.id;
               a_json(
-                  "{{ url_for('api.edit_judge') }}",
-                  "UPDATE",
-                  JSON.stringify(result),
+                  "{{ url_for('admin.manage_classify') }}?cls_id="+id+"&name="+result,
+                  "POSt",
+                  JSON.stringify({}),
                   function (data) {
                       parent.swal(data.msg, '', 'success').then(()=>document.location.reload())
                   }
               )
-          }).catch(swal.noop)
+          });
       };
 
       $(document).ready(function () {
-          $('#CSearch').click(function () {
+          let msg = "{{ msg }}";
+          if (msg !== ""){
+              parent.swal(msg);
+          }
+          $('#addCls').click(function () {
               parent.swal({
-                  title: '请输入要搜索的问题关键字!',
+                  title: '请输入要增加的分类名称!',
                   input: 'text',
                   showCancelButton: true,
                   confirmButtonText: '搜索',
                   cancelButtonText: '取消',
                   showLoaderOnConfirm: true
-              }).then(function (res) {
-                  document.location.href = "{{ url_for('admin.judge_list', c_id=course.id) }}?q="+res;
+              }).then(function (result) {
+                  a_json(
+                      "{{ url_for('admin.manage_classify') }}?name="+result,
+                      "POSt",
+                      JSON.stringify({}),
+                      function (data) {
+                          parent.swal(data.msg, '', 'success').then(()=>document.location.reload())
+                      }
+                  )
               })
           });
       })
