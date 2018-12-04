@@ -61,8 +61,16 @@
                 <td>{{ course.classify }}</td>
                 <td>{{ course.newstime }}</td>
                 <td>{{ course.video_num }}</td>
-                <td>{{ course.choice_num }}</td>
-                <td>{{ course.pass_num }}</td>
+                <td>
+                  <a href="{{ url_for('admin.user_c_course', c_id=course.id) }}">
+                    {{ course.choice_num }}
+                  </a>
+                </td>
+                <td>
+                  <a href="{{ url_for('admin.user_c_course', c_id=course.id, status="1") }}">
+                    {{ course.pass_num }}
+                  </a>
+                </td>
                 <td
                     {% if course.status == '已发布' %}
                       class="green"

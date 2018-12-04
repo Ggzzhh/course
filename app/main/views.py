@@ -69,7 +69,7 @@ def login():
         data = request.form
         user = User.query.filter_by(phone=data['phone_num']).first()
         if user:
-            if data['password'] == user.password and not user.is_moderator:
+            if data['password'] == user.password:
                 login_user(user)
                 return redirect(next if next else url_for('main.index'))
             else:

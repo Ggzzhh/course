@@ -99,7 +99,10 @@ class Choice(db.Model):
         data = {
             'user_id': self.user_id,
             'course_id': self.course_id,
-            'course': self.course.to_json() if self.course else None,
+            'user_name': self.user.name if self.user else '',
+            'user_phone': self.user.phone if self.user else '',
+            'course': self.course.to_json() if self.course else {},
+            'course_type': self.course.get_type() if self.course else '未 知',
             'course_url': url_for('main.course_detail', id=self.course_id),
             'newstime': self.course.newstime if self.course else None,
             'is_pass': '已通过' if self.is_pass else '未通过',
@@ -109,6 +112,7 @@ class Choice(db.Model):
             'start_exam_time': self.exam_time or '未 知',
             'point': self.point or 0
         }
+
         return data
 
     def update_pass(self):
@@ -203,12 +207,14 @@ class User(UserMixin, db.Model):
     choices = db.relationship('Choice',
                               foreign_keys=[Choice.user_id],
                               backref=db.backref('user', lazy='joined'),
-                              lazy='dynamic'
+                              lazy='dynamic',
+                              cascade='all, delete-orphan'
                               )
     u_videos = db.relationship('UserVideo',
                                foreign_keys=[UserVideo.user_id],
                                backref=db.backref('user', lazy='joined'),
-                               lazy='dynamic'
+                               lazy='dynamic',
+                               cascade='all, delete-orphan'
                                )
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
@@ -221,16 +227,24 @@ class User(UserMixin, db.Model):
             current_choice = {
                 'user_id': None,
                 'course_id': None,
-                'course_name': '没有正在学习的课程,请尽快选课',
+                'course_type': '未 知',
+                'course': {},
                 'course_url': '#',
                 'newstime': '',
                 'is_pass': '',
-                'learn_rate': 0
+                'learn_rate': 0,
+                'is_pass_bol': False,
+                'exam_time': 45,
+                'start_exam_time': '未 知',
+                'point': 0
             }
 
         data = {
+            'id': self.id,
             'name': self.name,
             'phone': self.phone,
+            'password': self.password,
+            'role': self.role.name if self.role else '暂无',
             'current_choice': current_choice,
         }
         return data

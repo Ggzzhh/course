@@ -1,12 +1,12 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
 {% endblock %}
 {% block content_body %}
   <div class="list-container">
     <div class="list-body">
       <div class="list-search">
-        <form action="{{ url_for('admin.user_list') }}">
+        <form action="{{ url_for('admin.user_c_course') }}">
           <div class="list-head">
             <div>查找条件</div>
             <div>
@@ -15,50 +15,53 @@
           </div>
           <div class="search-content">
             <div class="form-horizontal">
-              <div class="form-title">人员姓名 * </div>
+              <div class="form-title">课程名称 * </div>
               <input type="text" class="form-control" name="name" placeholder="请输入">
             </div>
-            <div class="form-horizontal">
-              <div class="form-title">人员电话 * </div>
-              <input type="text" class="form-control" name="phone" placeholder="请输入">
-            </div>
-            <div class="form-horizontal">
-              <div class="form-title">人员角色 * </div>
-              <select class="form-control" name="role">
-                <option value="">任意</option>
-                <option value="User">普通用户</option>
-                <option value="Moderator">管理员</option>
+             <div class="form-horizontal">
+              <div class="form-title">状 态 * </div>
+              <select class="form-control" name="status">
+                <option value="">不限</option>
+                <option value=1>已通过</option>
+                <option value=2>未通过</option>
               </select>
             </div>
           </div>
+
         </form>
       </div>
       <div class="list-content">
         <div class="list-head">
-          <div>人员列表</div>
+          <div>选课的人员列表</div>
         </div>
         <div class="list-table">
           <table>
             <thead>
             <tr>
-              <td>姓名</td>
-              <td>角色</td>
-              <td>电话</td>
-              <td>密码</td>
-              <td>操作</td>
+              <td>课程名称</td>
+              <td>课程类型</td>
+              <td>选课人员</td>
+              <td>电 话</td>
+              <td>学习进度</td>
+              <td>考试成绩</td>
+              <td>状 态</td>
             </tr>
             </thead>
             <tbody>
-            {% for user in users %}
+            {% for choice in choices %}
               <tr>
-                <td>{{ user.name }}</td>
-                <td>{{ user.role }}</td>
-                <td>{{ user.phone }}</td>
-                <td>{{ user.password }}</td>
-                <td>
-                  <a href="#">编辑</a>
-                  <a href="#" onclick="deleteUser('{{ user.id }}')">删除</a>
-                </td>
+                <td><a href="{{ url_for('admin.user_c_course',name=choice.course.name) }}">{{ choice.course.get('name') }}</a></td>
+                <td>{{ choice.course_type }}</td>
+                <td><a href="{{ url_for('admin.user_courses', u_id=choice.user_id) }}">{{ choice.user_name }}</a></td>
+                <td>{{ choice.user_phone }}</td>
+                <td>{{ choice.learn_rate }}</td>
+                <td>{{ choice.point }}</td>
+                <td>{% if choice.is_pass == "已通过" %}
+                  <span class="green">{{ choice.is_pass }}</span>
+                {% else %}
+                  <span class="red">{{ choice.is_pass }}</span>
+
+                {% endif %}</td>
               </tr>
             {% endfor %}
             </tbody>
@@ -68,15 +71,15 @@
           <nav aria-label="...">
             <ul class="pager">
               {% if prev %}
-                <li><a href="{{ url_for('admin.user_list',
-              page=prev, name=name, phone=phone, role_name=role_name) }}">上一页</a></li>
+                <li><a href="{{ url_for('admin.user_c_course',
+              page=prev, name=name, status=status) }}">上一页</a></li>
               {% else %}
                 <li class="disabled"><a >上一页</a></li>
               {% endif %}
               <li>共 {{ total }} 页 当前第 {{ page }} 页</li>
               {% if next %}
-                <li><a href="{{ url_for('admin.user_list',
-              page=next, name=name, phone=phone, role_name=role_name) }}">下一页</a></li>
+                <li><a href="{{ url_for('admin.user_c_course',
+              page=next, name=name, status=status) }}">下一页</a></li>
               {% else %}
                 <li class="disabled"><a >下一页</a></li>
               {% endif %}
@@ -115,8 +118,8 @@
       }
 
       $(document).ready(function () {
-        let msg = '{{ msg }}';
-        if (msg !== '') parent.swal('信息', msg, 'success')
+          let msg = '{{ msg }}';
+          if (msg !== '') parent.swal('信息', msg, 'success')
       })
   </script>
 {% endblock %}

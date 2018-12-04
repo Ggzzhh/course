@@ -551,3 +551,21 @@ def upload_topic():
             'resCode': 'error',
             'msg': '导入时出现错误! --' + str(e)
         })
+
+
+@api.route('/manage/user', methods=['DELETE'])
+@admin_required
+def del_user():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    u_id = json.get('u_id')
+    user = User.query.get_or_404(u_id)
+    db.session.delete(user)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '该用户已删除!'
+    })

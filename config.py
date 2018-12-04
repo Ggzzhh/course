@@ -10,7 +10,7 @@ class Config:
     SQL_USERNAME = 'root'
 
     # 数据库密码
-    SQL_PASSWORD = '657000'
+    SQL_PASSWORD = '65700'
 
     # 密匙
     SECRET_KEY = os.environ.get('SECRET_KEY') or "W2s4S4sa2FS96Ok"
@@ -62,7 +62,8 @@ class DevelopmentConfig(Config):
     """开发配置 以及开发时使用的数据库地址"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = \
-        'mysql+pymysql://root:65700@localhost:3306/course?charset=utf8'
+        'mysql+pymysql://{}:{}@localhost:3306/course?charset=utf8' \
+            .format(Config.SQL_USERNAME, Config.SQL_PASSWORD)
 
 
 class TestingConfig(Config):
@@ -74,9 +75,11 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    """正常使用时的配置 以及数据库地址 发生错误时自动发送邮件"""
+    """正常使用时的配置 以及数据库地址"""
+
     SQLALCHEMY_DATABASE_URI = \
-        'mysql+pymysql://root:65700@localhost:3306/course?charset=utf8'
+        'mysql+pymysql://{}:{}@localhost:3306/course?charset=utf8' \
+            .format(Config.SQL_USERNAME, Config.SQL_PASSWORD)
 
 
 config = {

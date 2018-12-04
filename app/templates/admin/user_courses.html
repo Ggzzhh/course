@@ -1,0 +1,96 @@
+{% extends 'admin/frm_base.html' %}
+{% block _head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+{% endblock %}
+{% block content_body %}
+  <div class="list-container">
+    <div class="list-body">
+      <div class="list-search">
+        <form action="{{ url_for('admin.user_courses') }}">
+          <div class="list-head">
+            <div>查找条件</div>
+            <div>
+              <button type="submit" class="btn btn-success btn-sm">搜索</button>
+            </div>
+          </div>
+          <div class="search-content">
+            <div class="form-horizontal">
+              <div class="form-title">人员姓名 * </div>
+              <input type="text" class="form-control" name="name" placeholder="请输入">
+            </div>
+            <div class="form-horizontal">
+              <div class="form-title">电 话 * </div>
+              <input type="text" class="form-control" name="phone" placeholder="请输入">
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <div class="list-content">
+        <div class="list-head">
+          <div>人员的选课列表</div>
+        </div>
+        <div class="list-table">
+          <table>
+            <thead>
+            <tr>
+              <td>选课人员</td>
+              <td>电 话</td>
+              <td>课程名称</td>
+              <td>课程类型</td>
+              <td>学习进度</td>
+              <td>考试成绩</td>
+              <td>状 态</td>
+            </tr>
+            </thead>
+            <tbody>
+            {% for choice in choices %}
+              <tr>
+                <td><a href="{{ url_for('admin.user_courses', u_id=choice.user_id) }}">{{ choice.user_name }}</a></td>
+                <td>{{ choice.user_phone }}</td>
+                <td><a href="{{ url_for('admin.user_courses',name=choice.course.name) }}">{{ choice.course.get('name') }}</a></td>
+                <td>{{ choice.course_type }}</td>
+                <td>{{ choice.learn_rate }}</td>
+                <td>{{ choice.point }}</td>
+                <td>{% if choice.is_pass == "已通过" %}
+                  <span class="green">{{ choice.is_pass }}</span>
+                {% else %}
+                  <span class="red">{{ choice.is_pass }}</span>
+
+                {% endif %}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="list-pagination">
+          <nav aria-label="...">
+            <ul class="pager">
+              {% if prev %}
+                <li><a href="{{ url_for('admin.user_courses',
+              page=prev, name=name, phone=phone) }}">上一页</a></li>
+              {% else %}
+                <li class="disabled"><a >上一页</a></li>
+              {% endif %}
+              <li>共 {{ total }} 页 当前第 {{ page }} 页</li>
+              {% if next %}
+                <li><a href="{{ url_for('admin.user_courses',
+              page=next, name=name, phone=phone) }}">下一页</a></li>
+              {% else %}
+                <li class="disabled"><a >下一页</a></li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block _scripts %}
+  <script>
+      $(document).ready(function () {
+          let msg = '{{ msg }}';
+          if (msg !== '') parent.swal('信息', msg, 'success')
+      })
+  </script>
+{% endblock %}

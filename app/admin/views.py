@@ -9,7 +9,8 @@ from flask_login import login_manager, login_user, current_user, logout_user
 from . import admin
 from app import db
 from app.decorators import admin_required
-from app.models import User, Classify, Course, Video, RadioBank, JudgeBank, MultipleBank, Choice
+from app.models import User, Classify, Course, Video, RadioBank, \
+    JudgeBank, MultipleBank, Choice, Role
 from app.tools import save_to_static
 
 login_manager.login_view = 'admin.login'
@@ -124,7 +125,7 @@ def course_list():
         query = query.filter(Course.name.like('%{}%'.format(course_name)))
     if course_status is not None and course_status != 2:
         query = query.filter(Course.status == course_status)
-    pagination = query.order_by(Course.newstime.desc())\
+    pagination = query.order_by(Course.newstime.desc()) \
         .paginate(page, per_page=8, error_out=False)
     next = pagination.next_num
     prev = pagination.prev_num
@@ -212,8 +213,11 @@ def add_user():
     if request.method == "POST":
         form = request.form.to_dict()
         phone = form.get('phone')
+        ex_phone = User.query.filter_by(phone=phone).all()
         pwd = form.get('password')
-        if pwd == "" or phone == "":
+        if ex_phone:
+            msg = "新增失败！电话号码已存在！"
+        elif pwd == "" or phone == "":
             msg = "新增失败！电话号码或者密码为空！"
         elif len(phone) != 11:
             msg = "新增失败！电话号码位数错误！"
@@ -238,8 +242,136 @@ def user_list():
             'link': url_for('admin.user_list')
         }
     ]
-    # todo: 完成这个玩意
-    return render_template('admin/user_list.html', route=route)
+    msg = request.args.get('msg', default='')
+    page = request.args.get('page', default=1, type=int)
+    name = request.args.get('name', default=None)
+    phone = request.args.get('phone', default=None, type=int)
+    role_name = request.args.get('role', default=None)
+    role = Role.query.filter_by(name=role_name).first()
+    admin = Role.query.filter_by(name='Administrator').first()
+
+    query = User.query.filter(User.role != admin)
+
+    if name:
+        query = query.filter(User.name.like('%{}%'.format(name)))
+    if phone:
+        query = query.filter(User.phone == phone)
+    if role:
+        query = query.filter(User.role == role)
+    pagination = query.order_by(User.id) \
+        .paginate(page, per_page=8, error_out=False)
+    next = pagination.next_num
+    prev = pagination.prev_num
+    total = pagination.pages
+    users = [user.to_json() for user in pagination.items]
+
+    return render_template('admin/user_list.html',
+                           route=route,
+                           users=users,
+                           next=next,
+                           prev=prev,
+                           total=total,
+                           page=page,
+                           name=name,
+                           phone=phone,
+                           role_name=role_name)
+
+
+@admin.route('/user/choice/course')
+@admin_required
+def user_c_course():
+    route = [
+        {
+            'type': 'text',
+            'text': '课程管理'
+        },
+        {
+            'type': 'link',
+            'text': '选课的人员',
+            'link': url_for('admin.user_c_course')
+        }
+    ]
+    msg = request.args.get('msg', default='')
+    page = request.args.get('page', default=1, type=int)
+    name = request.args.get('name', default=None)
+    c_id = request.args.get('c_id', default=0, type=int)
+    status = request.args.get('status', default=0, type=int)
+
+    query = Choice.query
+
+    if name:
+        query = query.join(Course).filter(Course.name.like('%{}%'.format(name)))
+    if status:
+        if status == 1:
+            query = query.filter(Choice.is_pass == "1")
+        if status == 2:
+            query = query.filter(Choice.is_pass == "0")
+    if c_id:
+        query = query.filter(Choice.course_id == c_id)
+
+    pagination = query.order_by(Choice.course_id) \
+        .paginate(page, per_page=8, error_out=False)
+    next = pagination.next_num
+    prev = pagination.prev_num
+    total = pagination.pages
+    choices = [choice.to_json() for choice in pagination.items]
+
+    return render_template('admin/course_users.html',
+                           route=route,
+                           choices=choices,
+                           next=next,
+                           prev=prev,
+                           total=total,
+                           page=page,
+                           name=name,
+                           status=status)
+
+
+@admin.route('/course/choice/user')
+@admin_required
+def user_courses():
+    route = [
+        {
+            'type': 'text',
+            'text': '人员管理'
+        },
+        {
+            'type': 'link',
+            'text': '人员的选课',
+            'link': url_for('admin.user_courses')
+        }
+    ]
+    msg = request.args.get('msg', default='')
+    page = request.args.get('page', default=1, type=int)
+    name = request.args.get('name', default=None)
+    u_id = request.args.get('u_id', default=0, type=int)
+    phone = request.args.get('phone', default=0)
+
+    query = Choice.query.join(User)
+
+    if name:
+        query = query.filter(User.name.like('%{}%'.format(name)))
+    if phone:
+        query = query.filter(User.phone == phone)
+    if u_id:
+        query = query.filter(Choice.user_id == u_id)
+
+    pagination = query.order_by(Choice.user_id) \
+        .paginate(page, per_page=8, error_out=False)
+    next = pagination.next_num
+    prev = pagination.prev_num
+    total = pagination.pages
+    choices = [choice.to_json() for choice in pagination.items]
+
+    return render_template('admin/user_courses.html',
+                           route=route,
+                           choices=choices,
+                           next=next,
+                           prev=prev,
+                           total=total,
+                           page=page,
+                           name=name,
+                           phone=phone)
 
 
 @admin.route('/system-setting')
