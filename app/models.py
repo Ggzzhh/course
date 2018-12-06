@@ -79,6 +79,39 @@ class AnonymousUser(AnonymousUserMixin):
 login_manager.anonymous_user = AnonymousUser
 
 
+class Archive(db.Model):
+    __tablename__ = 'archives'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    course_name = db.Column(db.String(128), default='空')
+    course_type = db.Column(db.String(32), default='空')
+    course_duration = db.Column(db.String(64), default='0')
+    course_score = db.Column(db.Integer, default=0)
+    course_status = db.Column(db.String(16), default='已通过')
+    end_learn_time = db.Column(db.Date, default=datetime.now().date())
+
+    def to_json(self):
+        data = {
+            'name': self.course_name,
+            'type': self.course_type,
+            'duration': self.course_duration,
+            'score': self.course_score,
+            'status': self.course_status,
+            'elt': self.end_learn_time,
+        }
+        return data
+
+    def from_c_json(self, c_json):
+        course = c_json.get('course')
+        if course:
+            self.user_id = c_json.get('user_id')
+            self.course_type = c_json.get('course_type')
+            self.course_duration = course.get('duration')
+            self.course_score = c_json.get('point')
+            return self
+        return None
+
+
 class Choice(db.Model):
     __tablename__ = 'choices'
 
@@ -116,6 +149,8 @@ class Choice(db.Model):
         return data
 
     def update_pass(self):
+        # if self.is_pass:
+        #     return
         self.update_nums()
         learn_pass = False if self.video_nums == 0 else self.finish_nums >= self.video_nums
         exam_pass = self.point and self.point >= (self.course.pass_score or 60)
@@ -127,7 +162,10 @@ class Choice(db.Model):
         if _type == '培训':
             self.is_pass = learn_pass and exam_pass
         if self.is_pass:
-            print('添加到表档案中，档案只记录，不删除!除非用户被删除!')
+            if self.course:
+                a = Archive(course_name=self.course.name)
+                a = a.from_c_json(self.to_json())
+                db.session.add(a)
         db.session.add(self)
         db.session.commit()
 
@@ -204,6 +242,12 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(64))
     phone = db.Column(db.String(11), unique=True)
     password = db.Column(db.String(64), nullable=False)
+    archives = db.relationship('Archive',
+                               foreign_keys=[Archive.user_id],
+                               backref='user',
+                               lazy='dynamic',
+                               cascade='all, delete-orphan'
+                               )
     choices = db.relationship('Choice',
                               foreign_keys=[Choice.user_id],
                               backref=db.backref('user', lazy='joined'),
@@ -349,10 +393,14 @@ class Course(db.Model):
                              cascade='all, delete-orphan')
 
     def to_json(self):
+        url = url_for('main.course_video', course_id=self.id)
+        _type = self.get_type()
+        if _type == "考试":
+            url = ""
         data = {
             'id': self.id,
             'name': self.name,
-            'url': url_for('main.course_video', course_id=self.id),
+            'url': url,
             'classify': self.classify.name if self.classify else None,
             'type': self.get_type(),
             'duration': self.duration,
@@ -766,3 +814,5 @@ class MultipleBank(db.Model):
             'o4': self.option4
         }
         return data
+
+

@@ -124,6 +124,8 @@ def update_learn_time():
                 ch.finish_nums += 1
             video_rate = uv.get_percent()
             learn_rate = ch.learn_rate()
+            if learn_rate == 100:
+                ch.update_pass()
         return jsonify({
             'resCode': 'ok',
             'msg': '更新完毕！',

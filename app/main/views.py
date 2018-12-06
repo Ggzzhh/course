@@ -9,7 +9,7 @@ from flask import jsonify, redirect, render_template, url_for, current_app, \
     request, send_from_directory, make_response, abort
 from flask_login import login_user, logout_user, login_required, current_user
 
-from app.models import User, Classify, Course, Choice, Video, UserVideo
+from app.models import User, Classify, Course, Choice, Video, UserVideo, Archive
 from app.decorators import admin_required, user_required
 from . import main
 
@@ -199,7 +199,11 @@ def exercise():
 @main.route('/user/archives')
 @user_required
 def archives():
-    return render_template('user/archives.html')
+    page = request.args.get('page', default=1, type=int)
+    query = Archive.query.order_by(Archive.id.desc())
+    paginate = query.filter(Archive.user_id == current_user.id).paginate(page, per_page=3, error_out=False)
+    _archives = [archive.to_json() for archive in paginate.items]
+    return render_template('user/archives.html', paginate=paginate, archives=_archives)
 
 
 @main.route('/user/info')

@@ -105,12 +105,11 @@
                               let progress = $(this).find('.progress-bar'),
                                   rate = data.rate['video_rate']+"%",
                                   learnProgress = $('#learn-rate').find('.progress-bar');
-                                  learnRate = data.rate['learn_rate'] + "%";
+                              learnRate = data.rate['learn_rate'] + "%";
                               progress.css('width', rate);
                               progress.text(rate);
                               learnProgress.css('width', learnRate);
                               learnProgress.text(learnRate);
-
                           }
                       });
                   }
@@ -118,6 +117,7 @@
           }
 
           function loadVideo(src, title, id){
+
               chimee.controls = false;
               chimee = new ChimeePlayer({
                   wrapper: '#wrapper',
@@ -130,16 +130,22 @@
 
           function start_timer(){
               let c = this;
+
               {% if current_user.is_user and course.type != '公共' %}
                   interval = setInterval(function () {
+                      if (c.paused) {
+                          return
+                      }
                       timer ++;
+
                       if (timer === 5){
-                          updateLearnTime('{{ current_user.id }}', '{{ course.id }}', c.id);
                           timer = 0;
+                          updateLearnTime('{{ current_user.id }}', '{{ course.id }}', c.id);
                       }
 
                       {% if course.validate %}
-                          if (Math.round(c.currentTime) % {{ course.validate|default(300) }} === 0) {
+                          let cTime = Math.round(c.currentTime);
+                          if (cTime !==0 && cTime % {{ course.validate|default(300) }} === 0) {
                               c.pause();
                               let q = generateQuestion(),
                                   a = getAnswer(q);

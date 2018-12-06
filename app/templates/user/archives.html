@@ -24,35 +24,40 @@
 
     <div class="learn-content">
       <div class="tab-content">
-        {% if not '没档案' %}
+        {% if not archives %}
           {{ user_model.nothing() }}
         {% else %}
           <div class="flex-column justify-content-center align-items-center">
-          <table class="mytable table-bordered">
-            <thead>
-            <tr>
-              <th>课程名称</th>
-              <th>课程类型</th>
-              <th>开始学习日期</th>
-              <th>课程时长</th>
-              <th>学习时长</th>
-              <th>考试状态</th>
-            </tr>
-            </thead>
-            <tbody>
+            <table class="mytable table-bordered">
+              <thead>
               <tr>
-                <td>测试课程</td>
-                <td>培训</td>
-                <td>2018-11-12</td>
-                <td>200 分钟</td>
-                <td>210 分钟</td>
-                <td><span class="green">已通过</span></td>
+                <th>课程名称</th>
+                <th>课程类型</th>
+                <th>课程时长</th>
+                <th>考试分数</th>
+                <th>课程状态</th>
+                <th>通过日期</th>
               </tr>
-            </tbody>
-          </table>
-          {{ model.pagination() }}
+              </thead>
+              <tbody>
+
+              {% for foo in archives %}
+                <tr>
+                  <td>{{ foo.name }}</td>
+                  <td>{{ foo.type }}</td>
+                  <td>{{ foo.duration }} 分钟</td>
+                  <td>{{ foo.score }} 分</td>
+                  <td><span class="green">{{ foo.status }}</span></td>
+                  <td>{{ foo.elt }}</td>
+                </tr>
+              {% endfor %}
+
+              </tbody>
+            </table>
+            {#          {{ model.pagination() }}#}
           </div>
         {% endif %}
+
       </div>
 
     </div>

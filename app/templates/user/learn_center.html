@@ -120,9 +120,13 @@
           <div class="thumbnail">
             <img src="${ choice.course.img_url }" alt="">
             <div class="bg">
+
+              {@if choice.course.url != ""}
               <div class="status">
                 <a href="${ choice.course.url }">继续学习</a>
               </div>
+              {@/if}
+
               <div class="status">
                 <span class="delete-choice"
                       data-c-id="${ choice.course_id }"
