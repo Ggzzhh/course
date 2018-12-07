@@ -103,6 +103,7 @@ def course_detail(id):
 @main.route('/exam/<int:c_id>/detail')
 @user_required
 def exam_detail(c_id):
+    msg = ''
     course = Course.query.get_or_404(c_id)
     if not course.need_exam:
         return abort(403)
@@ -111,13 +112,17 @@ def exam_detail(c_id):
         return abort(403)
     detail = course.exam_to_json()
     return render_template('main/exam_detail.html', page_title=current_app.config['SYSTEMNAME'],
-                           detail=detail)
+                           detail=detail, msg=msg)
 
 
-@main.route('/exam/<int:exam_id>/progress')
+@main.route('/course/<int:c_id>/exam')
 @user_required
-def exam(exam_id):
-    return '考卷'
+def exam(c_id):
+    course = Course.query.get_or_404(c_id)
+    if not course.need_exam:
+        return abort(403)
+    paper = course.make_paper()
+    return render_template('main/exam.html', paper=paper, course=course.exam_to_json())
 
 
 @main.route('/course/<int:course_id>/video')
@@ -200,7 +205,7 @@ def exercise():
 @user_required
 def archives():
     page = request.args.get('page', default=1, type=int)
-    query = Archive.query.order_by(Archive.id.desc())
+    query = Archive.query.order_by(Archive.id)
     paginate = query.filter(Archive.user_id == current_user.id).paginate(page, per_page=3, error_out=False)
     _archives = [archive.to_json() for archive in paginate.items]
     return render_template('user/archives.html', paginate=paginate, archives=_archives)

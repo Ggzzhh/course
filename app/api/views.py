@@ -1,4 +1,5 @@
 
+from datetime import datetime
 from flask import jsonify, request, current_app, url_for
 from flask_login import current_user
 from pyexcel_xlsx import get_data
@@ -13,6 +14,71 @@ from app.tools import delete_file
 @api.route('/')
 def main():
     return jsonify({'resCode': '200', 'msg': 'ok'})
+
+
+@api.route('/exam/push', methods=['POST'])
+@user_required
+def push_exam():
+    data = request.get_json()
+    if data is None:
+        return jsonify({'resCode': 'ok', 'msg': '无内容'})
+    c_id = data.get('c_id')
+    score = 0
+    wrongs = []
+    rights = []
+    course = Course.query.get_or_404(c_id)
+    choice = Choice.query.filter(Choice.course_id == c_id, Choice.user_id == current_user.id).first()
+    answers = data.get('answers')
+
+    for answer in answers:
+        t = answer[0]
+        res = False
+        temp = None
+        try:
+            if t == 'j':
+                temp = JudgeBank.query.get(answer[1:])
+                res = temp.is_right(answers[answer][0])
+                if res:
+                    score += temp.course.judge_score
+            if t == 'r':
+                temp = RadioBank.query.get(answer[1:])
+                res = temp.is_right(answers[answer][0])
+                if res:
+                    score += temp.course.radio_score
+            if t == 'm':
+                temp = MultipleBank.query.get(answer[1:])
+                res = temp.is_right(answers[answer])
+                if res:
+                    score += temp.course.multiple_score
+
+            a = temp.answer
+            if a is False:
+                a = '错误'
+            elif a is True:
+                a = '正确'
+
+            if not res:
+                wrongs.append({'id': temp.get_question().get('id'), 'answer': a})
+            else:
+                rights.append({'id': temp.get_question().get('id'), 'answer': a})
+
+        except Exception as e:
+            print(e)
+            return jsonify({'resCode': 'err', 'msg': '传输的数据出现错误！'})
+
+    choice.point = score
+    choice.exam_time = datetime.now()
+    choice.update_pass()
+
+    data = {
+        'resCode': 'ok',
+        'score': score,
+        'total_score': course.total_score,
+        'rights': rights,
+        'wrongs': wrongs,
+        'status': '已通过' if choice.is_pass else '未通过'
+    }
+    return jsonify(data)
 
 
 @api.route('/auth_pwd', methods=['POST'])
@@ -305,6 +371,7 @@ def delete_video():
 @api.route('/exam', methods=['UPDATE'])
 @admin_required
 def update_exam():
+
     json = request.get_json()
     if json is None:
         return jsonify({
@@ -398,6 +465,7 @@ def add_multiple():
 @api.route('/exam/radio', methods=['DELETE'])
 @admin_required
 def del_radio():
+
     json = request.get_json()
     if json is None:
         return jsonify({
@@ -504,7 +572,6 @@ def edit_judge():
 @admin_required
 def upload_topic():
     c_id = request.values.get('c_id')
-    print(c_id)
     course = Course.query.get_or_404(c_id)
     file = request.files.get('file')
     try:

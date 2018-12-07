@@ -77,14 +77,15 @@
 
 {% block _scripts %}
   <script>
-    $(document).ready(function () {
-       $('#back').click(function () {
-           history.back(-1)
-       });
+      $(document).ready(function () {
 
-       $('#startExam').click(function () {
-           document.location = "{{ url_for('main.exam', exam_id=1) }}"
-       });
-    });
+          $('#back').click(function () {
+              history.back(-1)
+          });
+
+          $('#startExam').click(function () {
+              document.location = "{{ url_for('main.exam', c_id=detail.c_id) }}"
+          });
+      });
   </script>
 {% endblock %}

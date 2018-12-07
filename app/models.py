@@ -3,10 +3,11 @@
 # 作者: Ggzzhh
 # 创建时间: 2018/10/22
 
+import random
 from datetime import datetime
 
 from flask import url_for
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_login import UserMixin, AnonymousUserMixin, current_user
 
 from . import db, login_manager
 
@@ -113,6 +114,8 @@ class Archive(db.Model):
 
 
 class Choice(db.Model):
+
+
     __tablename__ = 'choices'
 
     def __init__(self, **kwargs):
@@ -163,8 +166,11 @@ class Choice(db.Model):
             self.is_pass = learn_pass and exam_pass
         if self.is_pass:
             if self.course:
-                a = Archive(course_name=self.course.name)
+                a = Archive.query.filter(Archive.course_name==self.course.name, Archive.user_id==current_user.id).first()
+                if not a:
+                    a = Archive(course_name=self.course.name)
                 a = a.from_c_json(self.to_json())
+                print(a.to_json())
                 db.session.add(a)
         db.session.add(self)
         db.session.commit()
@@ -391,6 +397,27 @@ class Course(db.Model):
                              backref='course',
                              lazy='dynamic',
                              cascade='all, delete-orphan')
+
+    def make_paper(self):
+        radios = [radio for radio in self.radios.all()]
+        multiples = [multiple for multiple in self.multiples]
+        judges = [judge for judge in self.judges]
+        random.shuffle(radios)
+        random.shuffle(multiples)
+        random.shuffle(judges)
+        if not self.need_exam:
+            return {}
+        try:
+            paper = {
+                'radios': [radio.get_question() for radio in radios[:self.radio_num]],
+                'multiples': [multiple.get_question() for multiple in multiples[:self.multiple_num]],
+                'judges': [judge.get_question() for judge in judges[:self.judge_num]],
+                'test': []
+            }
+        except Exception as e:
+            print(e)
+            paper = {}
+        return paper
 
     def to_json(self):
         url = url_for('main.course_video', course_id=self.id)
@@ -730,6 +757,19 @@ class RadioBank(db.Model):
         }
         return data
 
+    def get_question(self):
+        options = [self.option1, self.option2, self.option3, self.option4]
+        random.shuffle(options)
+        data = {
+            'id': "r{}".format(self.id),
+            'question': self.question,
+            'options': options
+        }
+        return data
+
+    def is_right(self, answer):
+        return answer == self.answer
+
 
 class JudgeBank(db.Model):
     __tablename__ = 'judge_bank'
@@ -763,6 +803,21 @@ class JudgeBank(db.Model):
             judge = JudgeBank(question=question)
         judge.answer = True if answer in ('1', True, '正确') else False
         return judge
+
+    def get_question(self):
+        data = {
+            'id': "j{}".format(self.id),
+            'question': self.question
+        }
+        return data
+
+    def is_right(self, answer):
+        if isinstance(answer, str):
+            try:
+                answer = int(answer)
+            except:
+                return False
+        return answer == self.answer
 
 
 class MultipleBank(db.Model):
@@ -814,5 +869,25 @@ class MultipleBank(db.Model):
             'o4': self.option4
         }
         return data
+
+    def get_question(self):
+        options = [self.option1, self.option2, self.option3, self.option4]
+        random.shuffle(options)
+        data = {
+            'id': "m{}".format(self.id),
+            'question': self.question,
+            'options': options
+        }
+        return data
+
+    def is_right(self, answer):
+        _answers = self.answer.split('&')
+        _answers.sort()
+        if not isinstance(answer, list):
+            answer = answer.split('&')
+        answer.sort()
+        return _answers == answer
+
+
 
 

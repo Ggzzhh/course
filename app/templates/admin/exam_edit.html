@@ -235,7 +235,9 @@
   <script>
       function changeTotal(score, that){
           let total = $(that).val() * score;
-          if ($(that).parent().next().find('input').val() < $(that).val()){
+          let n = $(that).parent().next().find('input').val();
+          let m = $(that).val();
+          if (parseInt(n) < parseInt(m)){
               swal('超出题库中习题数量!');
               $(that).val($(that).parent().next().find('input').val());
           }
