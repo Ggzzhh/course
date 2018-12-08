@@ -624,6 +624,23 @@ def upload_topic():
         })
 
 
+@api.route('/manage/user', methods=['UPDATE'])
+@admin_required
+def edit_user():
+    json = request.get_json()
+    if json is None:
+        return jsonify({
+            'resCode': 'error',
+            'msg': '出现错误! 数据为空！'
+        })
+    user = User.from_json(json)
+    db.session.add(user)
+    return jsonify({
+        'resCode': 'ok',
+        'msg': '已修改!'
+    })
+
+
 @api.route('/manage/user', methods=['DELETE'])
 @admin_required
 def del_user():

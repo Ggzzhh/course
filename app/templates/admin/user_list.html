@@ -1,6 +1,6 @@
 {% extends 'admin/frm_base.html' %}
 {% block _head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}" type="text/css">
 {% endblock %}
 {% block content_body %}
   <div class="list-container">
@@ -56,7 +56,7 @@
                 <td>{{ user.phone }}</td>
                 <td>{{ user.password }}</td>
                 <td>
-                  <a href="#">编辑</a>
+                  <a href="#" onclick="editUser(this,'{{ user.id }}', '{{ user.role }}')">编辑</a>
                   <a href="#" onclick="deleteUser('{{ user.id }}')">删除</a>
                 </td>
               </tr>
@@ -89,6 +89,54 @@
 {% endblock %}
 {% block _scripts %}
   <script>
+      function editUser(ele, id, role) {
+          event.preventDefault();
+          let tr = ele.parentNode.parentNode;
+          let phone = tr.children[2].innerHTML,
+              pwd = tr.children[3].innerHTML,
+              name = tr.children[0].innerHTML;
+          parent.swal({
+              title: '编辑人员信息',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: '保存',
+              cancelButtonText: '取消',
+              html:
+                  '<b>姓名</b><input id="swal-input1" class="swal2-input" value='+ name +'>' +
+                  '<b>电话</b><input id="swal-input2" class="swal2-input" value=' + phone + '>' +
+                  '<b>密码</b><input id="swal-input3" class="swal2-input" value=' + pwd + '>'
+                  ,
+              preConfirm: function () {
+                  return new Promise(function (resolve) {
+                      resolve([
+                          parent.$('#swal-input1').val(),
+                          parent.$('#swal-input2').val(),
+                          parent.$('#swal-input3').val()
+                      ])
+                  })
+              },
+              onOpen: function () {
+                  parent.$('#swal-input1').focus()
+              }
+          }).then(function (result) {
+              let data = JSON.stringify({
+                  name: result[0],
+                  phone: result[1],
+                  password: result[2],
+                  role: role,
+                  _id: id
+              });
+              a_json(
+                  "{{ url_for('api.edit_user') }}",
+                  "UPDATE",
+                  data,
+                  function (data) {
+                      parent.swal(data.msg, '', 'success').then(()=>document.location.reload())
+                  }
+              )
+          }).catch(swal.noop)
+      }
+
       function deleteUser(id) {
           event.preventDefault();
           parent.swal({
@@ -115,8 +163,8 @@
       }
 
       $(document).ready(function () {
-        let msg = '{{ msg }}';
-        if (msg !== '') parent.swal('信息', msg, 'success')
+          let msg = '{{ msg }}';
+          if (msg !== '') parent.swal('信息', msg, 'success')
       })
   </script>
 {% endblock %}

@@ -307,6 +307,7 @@ class User(UserMixin, db.Model):
         name = data.get('name')
         if _id:
             user = User.query.get_or_404(_id)
+            user.name = name
         else:
             user = User(name=name)
         user.phone = data.get('phone')
