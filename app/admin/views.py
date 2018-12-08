@@ -61,7 +61,44 @@ def frm_index():
             'link': url_for('admin.frm_index')
         }
     ]
-    return render_template('admin/index.html', route=route)
+
+    user_num = len(User.query.all())
+    c_num = len(Course.query.all())
+    c_push_num = len(Course.query.filter_by(status=1).all())
+    c_not_push_num = len(Course.query.filter_by(status=0).all())
+    video_num = len(Video.query.all())
+    choice_num = len(Choice.query.all())
+    pass_num = len(Choice.query.filter_by(is_pass=1).all())
+    no_pass_num = len(Choice.query.filter_by(is_pass=0).all())
+
+    judge_num = len(JudgeBank.query.all())
+    radio_num = len(RadioBank.query.all())
+    multiple_num = len(MultipleBank.query.all())
+    total_num = judge_num + radio_num + multiple_num
+
+    course_info = {
+        'c_num': c_num,
+        'c_push_num': c_push_num,
+        'c_not_push_num': c_not_push_num
+    }
+
+    choice_info = {
+        'choice_num': choice_num,
+        'pass_num': pass_num,
+        'no_pass_num': no_pass_num
+    }
+
+    return render_template('admin/index.html',
+                           route=route,
+                           course_info=course_info,
+                           user_num=user_num,
+                           video_num=video_num,
+                           choice_info=choice_info,
+                           judge_num=judge_num,
+                           radio_num=radio_num,
+                           multiple_num=multiple_num,
+                           total_num=total_num
+                           )
 
 
 @admin.route('/course-manage/add', methods=["GET", "POST"])

@@ -1,0 +1,46 @@
+{% macro line(explain, number, unit, url, color, disabled=true) %}
+  <div class="line">
+    <div class="info">
+      <div class="explain">{{ explain }}</div>
+      <div class="nums" style="color:{{ color }}">
+        {{ number }}
+        <span class="unit" style="color: black">{{ unit }}</span>
+      </div>
+    </div>
+    <div class="line-link">
+      {% if not disabled %}
+        <a href="{{ url }}">
+          <span class="glyphicon glyphicon-circle-arrow-right"></span>
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro card(icon_class, explain, number, unit, more_url, color1, color2, lines=None, disabled=true) %}
+  <div class="card">
+    <div class="card-header" style="background-color: {{ color1 }}">
+      <div class="icon">
+        <span class="glyphicon {{ icon_class }}"></span>
+      </div>
+      <div class="info">
+        <div class="explain">{{ explain }}</div>
+        <div class="nums">
+          {{ number }}
+          <span class="unit">{{ unit }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-link" style="background-color: {{ color2 }}">
+      {% if disabled %}
+        <a href="{{ more_url }}" >查看更多 >  </a>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      {% for l in lines %}
+        {{ line(l.explain, l.number, l.unit, l.url, color1, l.get('disabled')) }}
+      {% endfor %}
+    </div>
+  </div>
+{% endmacro %}

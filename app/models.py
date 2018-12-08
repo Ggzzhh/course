@@ -187,6 +187,8 @@ class Choice(db.Model):
         db.session.commit()
 
     def learn_rate(self):
+        if self.is_pass:
+            return 100
         if self.finish_nums < 1:
             return 0
         self.update_nums()

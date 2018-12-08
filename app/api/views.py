@@ -360,7 +360,9 @@ def update_video():
 def delete_video():
     v_id = request.args.get('v_id')
     video = Video.query.get_or_404(v_id)
+    course = video.course
     db.session.delete(video)
+    course.update_duration()
     delete_file(video.video_src)
     return jsonify({
         'resCode': 'ok',
