@@ -6,7 +6,7 @@
 import random
 from datetime import datetime
 
-from flask import url_for
+from flask import url_for, current_app
 from flask_login import UserMixin, AnonymousUserMixin, current_user
 
 from . import db, login_manager
@@ -217,8 +217,8 @@ class UserVideo(db.Model):
         return round(self.learn_time / self.duration * 100)
 
     def update_learn_time(self):
-        if self.learn_time + 5 < self.duration:
-            self.learn_time += 5
+        if self.learn_time + 6 < self.duration:
+            self.learn_time += 6
         else:
             self.learn_time = self.duration
         self.update_status()
@@ -269,6 +269,16 @@ class User(UserMixin, db.Model):
                                cascade='all, delete-orphan'
                                )
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    @staticmethod
+    def register_admin():
+        r = Role.query.filter_by(name="Administrator").first()
+        u = User(name=current_app.config['ADMIN_USERNAME'])
+        u.password = current_app.config['ADMIN_PASSWORD']
+        u.phone = current_app.config['ADMIN_PHONE']
+        u.role = r
+        db.session.add(u)
+        db.session.commit()
 
     def to_json(self):
         current_choice = self.choices.order_by(Choice.last_seen.desc()).first()
@@ -485,6 +495,7 @@ class Course(db.Model):
                 course.classify_id = classify_id
         else:
             course.name = name
+            course.classify_id = classify_id
 
         if validate:
             try:

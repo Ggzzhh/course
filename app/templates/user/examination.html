@@ -17,11 +17,11 @@
     </div>
     <div class="learn-navs">
       <a class="learn-nav {{ choice_np }}" href="#noPass" id="noPassTab"
-         aria-controls="noPass" role="tab" data-toggle="tab">
+         onclick="tab(this)" >
         考试（未通过）
       </a>
-      <a class="learn-nav {{ choice_p }}" href="#pass" id="passTab"
-         aria-controls="pass" role="tab" data-toggle="tab">考试（已通过）</a>
+      <a class="learn-nav {{ choice_p }}" href="#apass" id="passTab"
+         onclick="tab(this)" >考试（已通过）</a>
     </div>
     <div class="learn-content">
       <div class="tab-content">
@@ -78,7 +78,7 @@
             {{ user_model.nothing() }}
           {% endif %}
         </div>
-        <div id="pass" role="tabpanel" class="tab-pane">
+        <div id="apass" role="tabpanel" class="tab-pane">
           {% if passes %}
             <div class="flex-column justify-content-center align-items-center">
               <div class="exam-table table-responsive">
@@ -101,7 +101,7 @@
                           </div>
                           <div class="exam-course-info">
                             <div class="course-title">
-                               <a href="{{ foo.course_url }}">{{ foo.course.name }}</a>
+                              <a href="{{ foo.course_url }}">{{ foo.course.name }}</a>
                             </div>
                             <div class="course-percent">
                               {{ model.progress('学习进度：', foo.learn_rate) }}
@@ -110,7 +110,7 @@
                         </div>
                       </td>
                       <td>{{ foo.start_exam_time }}</td>
-                      <td>{{ foo.point }}分</td>
+                      <td style="min-width: 5rem">{{ foo.point }}分</td>
                       <td>
                         <a href="{{ url_for('main.archives') }}" class="btn btn-default">查看档案</a>
                       </td>
@@ -126,7 +126,6 @@
           {% endif %}
         </div>
       </div>
-
     </div>
 
   </div>
@@ -134,13 +133,13 @@
 {% block _scripts %}
   {{ super() }}
   <script>
+      function tab(ele) {
+          let id = $(ele).attr('href');
+          $('[role="tabpanel"]').hide();
+          $(id).show()
+      }
       $(document).ready(function () {
-          if ('choice' === '{{ choice_np }}'){
-              $('#noPassTab').tab('show');
-          }
-          else {
-              $('#passTab').tab('show');
-          }
+
       })
   </script>
 {% endblock %}

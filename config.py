@@ -19,6 +19,7 @@ class Config:
     ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME') or 'skzzk'
     # 超级管理员密码 默认为skzzk 可修改 第一次运行时会自动注册
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'skzzk'
+    ADMIN_PHONE = '00000000000'
 
     # 数据库自动提交数据
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True

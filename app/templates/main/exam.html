@@ -296,19 +296,22 @@
               timeDown('timeDown', '{{ course.exam_time * 60 }}');
 
               $('#submit').click(function () {
+
                   let status = true;
                   let answers = [];
                   let id = '';
                   $('.content').each(function () {
+
                       if (status === false) {
-                          swal('提示', '有问题未做！请全部做完后再交卷！', 'info');
                           return false
                       }
                       let that = this;
                       let count = 0;
                       $(this).find('input').each(function () {
+
                           let num = $(that).find('input').length;
                           if (this.checked !== false) {
+
                               return false;
                           }
                           else {
@@ -321,6 +324,7 @@
                                       scrollTop:scroll_offset.top - 300 //让body的scrollTop等于pos的top，就实现了滚动
                                   });
                                   status = false;
+                                  swal('提示', '有问题未做！请全部做完后再交卷！', 'info');
                                   return false;
                               }
                           }
@@ -399,11 +403,11 @@
                           let status = res.status === "已通过"? "<span class='green'>已通过</span>":"<span class='red'>未通过</span>";
 
                           $('#timeDown').parent()
-                              .html('您的得分是:'
+                              .html('您此次考试的分数为:'
                                   + res.score
                                   + "&nbsp;总分:"
                                   + res.total_score
-                                  + "&nbsp;本次考试:"
+                                  + "&nbsp;本门课程:"
                                   + status
                               );
 

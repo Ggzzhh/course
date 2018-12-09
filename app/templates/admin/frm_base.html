@@ -1,12 +1,14 @@
-{% extends "bootstrap/base.html" %}
-{% block html_attribs %} lang='zh-CN' {% endblock %}
-{% block head %}
+<!DOCTYPE html>
+<html lang="zh-CN" >
+<head>
   <meta charset="UTF-8" />
   <meta name="author" content="Ggzzhh" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  {{ super() }}
+  {{ bootstrap.load_css() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" type="text/css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/b3.css') }}"
+        type="text/css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/ifram.css') }}" type="text/css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}" type="text/css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert2.min.css') }}" type="text/css">
@@ -68,7 +70,8 @@
   {% block _head %}
 
   {% endblock %}
-{% endblock %}
+</head>
+<body>
 {% block content %}
   <div class="content-head">
     <div class="head-container">
@@ -99,7 +102,7 @@
   </div>
 {% endblock %}
 {% block scripts %}
-  {{ super() }}
+  {{ bootstrap.load_js() }}
   {{ moment.include_moment() }}
   <script src="{{ url_for('static', filename='js/sweetalert2.min.js') }}"></script>
   <script src="{{ url_for('static', filename='js/_ajax.js') }}"></script>
@@ -173,3 +176,5 @@
     </script>
   {% endblock %}
 {% endblock %}
+</body>
+</html>

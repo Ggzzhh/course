@@ -20,14 +20,15 @@ def make_shell_context():
 
 
 @manager.command
-def c_test_data():
-    from app.test import CreateCourse, CreateVideo
-    cc = CreateCourse()
-    cv = CreateVideo()
-    for i in range(20):
-        cc.create_course()
-    cv.run(80)
+def deploy():
+    """部署时运行"""
+    from app.models import User, Role
 
+    Role.insert_role()
+
+    User.register_admin()
+
+    print('ok')
 
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command('db', MigrateCommand)

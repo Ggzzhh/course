@@ -89,10 +89,10 @@
               confirmButtonText: '保存',
               cancelButtonText: '取消',
               html:
-                  '<b>标题</b><input id="swal-input1" class="swal2-input" value='+ title +'>' +
-                  '<b>排序优先级</b><input id="swal-input2" class="swal2-input" value=' + order + '>' +
-                  '<div style="width:100%; color:red; text-align: left; font-size: 0.875rem; font-weight: 500">' +
-                  '* 排序顺序按照从大到小排序，建议每个十位数设置一个序列，方便调整！<br/>* 如:第一节课设置为100， 第二节课设置为90...</div>',
+              '<b>标题</b><input id="swal-input1" class="swal2-input" value='+ title +'>' +
+              '<b>排序优先级</b><input id="swal-input2" class="swal2-input" value=' + order + '>' +
+              '<div style="width:100%; color:red; text-align: left; font-size: 0.875rem; font-weight: 500">' +
+              '* 排序顺序按照从大到小排序，建议每个十位数设置一个序列，方便调整！<br/>* 如:第一节课设置为100， 第二节课设置为90...</div>',
               preConfirm: function () {
                   return new Promise(function (resolve) {
                       resolve([
@@ -229,6 +229,9 @@
               },
               onFallbackMode: function () {
                   parent.swal('浏览器不支持上传插件！请更换浏览器!', '', 'info');
+              },
+              onFileTypeError: function (file) { //当文件类型错误时回调次函数
+                  parent.swal('仅支持上传视频');
               }
           });
       });

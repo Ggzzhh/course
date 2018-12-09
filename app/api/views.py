@@ -66,7 +66,8 @@ def push_exam():
             print(e)
             return jsonify({'resCode': 'err', 'msg': '传输的数据出现错误！'})
 
-    choice.point = score
+    if choice.point < score:
+        choice.point = score
     choice.exam_time = datetime.now()
     choice.update_pass()
 
@@ -285,6 +286,7 @@ def upload_video():
             video.duration = duration
             db.session.add(video)
             db.session.commit()
+            video.course.update_duration()
             for uv in video.u_videos:
                 uv.update_duration()
             return jsonify({

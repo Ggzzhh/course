@@ -22,9 +22,9 @@ def index():
     order = request.args.get('order', 'desc', type=str)
     course_type = request.args.get('type', 'other')
     # 基础查询
-    query = Course.query.join(Classify).filter(Course.status == 1)
+    query = Course.query.filter(Course.status == 1)
     if classify and classify != '不限':
-        query = query.filter(Classify.name == classify)
+        query = query.join(Classify).filter(Classify.name == classify)
     if course_type:
         query = Course.filter_type(query, course_type)
     if order == 'desc':
@@ -172,7 +172,7 @@ def examination():
 
     npaginate = query.filter(Choice.is_pass == "0").filter(Course.need_exam == "1") \
         .paginate(page, per_page=3, error_out=False)
-    ppaginate = query.filter(Choice.is_pass == "1", Course.need_exam == "1")\
+    ppaginate = query.filter(Choice.is_pass == "1").filter(Course.need_exam == "1")\
         .paginate(page, per_page=3, error_out=False)
     nopasses = [c.to_json() for c in npaginate.items]
     passes = [c.to_json() for c in ppaginate.items]
